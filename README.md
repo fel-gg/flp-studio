@@ -33,6 +33,21 @@ jalan dengan versi offline.
 
 Transkrip memakai faster-whisper. Dengan kartu NVIDIA (CUDA) jauh lebih cepat; tanpa itu tetap jalan di CPU.
 
+## Android (folder `android/`)
+
+Aplikasi HP mandiri (Kotlin + Media3, tidak butuh PC): pilih video, lalu otomatis dipotong jedanya,
+dijadikan 9:16, diberi punch-in tiap ~4 detik, subtitle, judul pembuka, dan warna. Pilih gaya sekali klik
+(Bersih, Sinematik, Monokrom, Energik, Lembut), lalu Simpan ke Galeri atau Bagikan. Subtitle dan potong
+jeda memakai Gemini (kunci diisi di Setelan aplikasi); tanpa kunci video tetap dirapikan.
+
+Build (Android Studio, atau JDK 21 + Android SDK 36):
+```
+cd android
+gradlew assembleRelease
+```
+APK ada di `android/app/build/outputs/apk/release/`. Untuk build pribadi, kunci bisa ditanam lewat
+`gemini.key=...` di `android/local.properties` (file itu tidak ikut ke git; jangan bagikan APK-nya).
+
 ## Kunci API Gemini (opsional)
 
 Fitur Gemini (Edit Otomatis, Magic, caption pintar) meminta kunci saat dipakai. Ambil gratis di

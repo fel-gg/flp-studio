@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="latar">#141414</color>
+    <color name="kartu">#1F1F1F</color>
+    <color name="teks">#F2EDE6</color>
+    <color name="redup">#9A948C</color>
+    <color name="aksen">#E8A25C</color>
+    <style name="Tema" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/latar</item>
+        <item name="android:statusBarColor">@color/latar</item>
+        <item name="android:navigationBarColor">@color/latar</item>
+        <item name="colorAccent">@color/aksen</item>
+        <item name="android:textColor">@color/teks</item>
+    </style>
+</resources>
