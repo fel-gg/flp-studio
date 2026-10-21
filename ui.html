@@ -1,0 +1,1834 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLP Studio</title><link rel="icon" href="/ikon.ico">
+<style>
+  :root { --bg: #161616; --panel: #1f1f1f; --garis: #2c2c2c; --teks: #e8e8e8; --redup: #8f8f8f;
+          --aksen: #22c3c3; --galat: #ff6b6b; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--teks); font: 13px/1.45 "Segoe UI", system-ui, sans-serif;
+         display: grid; grid-template-rows: 44px 1fr 26px; overflow: hidden; }
+  button, select, input { font: inherit; color: inherit; }
+  button { background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+  button:hover:not(:disabled) { border-color: #555; }
+  button:disabled { opacity: .4; cursor: default; }
+  .utama { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+
+  /* bilah atas */
+  .atas { display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--panel);
+          border-bottom: 1px solid var(--garis); }
+  .atas b { margin-right: auto; font-weight: 600; }
+
+  .isi { display: grid; grid-template-columns: 220px 1fr 300px; min-height: 0; }
+  .kolom { background: var(--panel); border-right: 1px solid var(--garis); overflow: auto; padding: 12px; }
+  .kanan { border-right: 0; border-left: 1px solid var(--garis); padding: 0; display: flex; flex-direction: column; }
+  h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: var(--redup); text-transform: uppercase;
+       letter-spacing: .06em; }
+
+  /* media */
+  .media { display: block; border: 1px dashed #3a3a3a; border-radius: 6px; padding: 8px; margin-bottom: 8px;
+           cursor: pointer; }
+  .media:hover { border-color: var(--aksen); }
+  .media input { display: none; }
+  .media div { font-weight: 600; }
+  .media small { display: block; color: var(--redup); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .klip { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .klip span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .klip button { padding: 1px 6px; }
+
+  /* preview */
+  .tengah { display: flex; flex-direction: column; min-height: 0; padding: 12px; gap: 10px; }
+  .layar { flex: 1; min-height: 0; background: #000; border-radius: 6px; display: flex; align-items: center;
+           justify-content: center; position: relative; }
+  .layar img, .layar video { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .layar .kosong { color: var(--redup); }
+  .memuat { position: absolute; top: 8px; right: 10px; color: var(--aksen); font-size: 12px; display: none; }
+  .waktu { display: flex; align-items: center; gap: 10px; }
+  .waktu input { flex: 1; }
+  .waktu span { color: var(--redup); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; }
+  input[type=range] { accent-color: var(--aksen); }
+
+  /* panel kanan */
+  .tab { display: flex; border-bottom: 1px solid var(--garis); }
+  .tab button { flex: 1; border: 0; border-radius: 0; background: transparent; color: var(--redup); padding: 10px 0; }
+  .tab button.aktif { color: var(--teks); box-shadow: inset 0 -2px var(--aksen); }
+  .halaman { display: none; padding: 12px; overflow: auto; }
+  .halaman.aktif { display: block; }
+  label { display: block; color: var(--redup); margin: 10px 0 4px; }
+  label:first-child { margin-top: 0; }
+  select, input[type=text] { width: 100%; background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px;
+                             padding: 6px 8px; }
+  .desk { color: var(--redup); font-size: 12px; margin-top: 3px; }
+  .cek { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--redup); }
+  .geser { display: grid; grid-template-columns: 70px 1fr 34px; align-items: center; gap: 8px; margin: 7px 0; }
+  .geser span { color: var(--redup); }
+  .geser output { text-align: right; font-variant-numeric: tabular-nums; }
+  .gemini p { margin: 0 0 10px; }
+  .gemini b { color: var(--redup); font-weight: 600; display: block; }
+
+  /* mode */
+  .m-mudah .hanyaPro, .m-pro .hanyaMudah { display: none !important; }
+  .m-mudah .isi { grid-template-columns: minmax(380px, 460px) 1fr; }
+  .mode { display: flex; }
+  .mode button { border-radius: 0; padding: 3px 14px; }
+  .mode button:first-child { border-radius: 6px 0 0 6px; }
+  .mode button:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
+  .mode button.aktif { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+
+  /* mode mudah */
+  .mudah { padding-bottom: 0; }
+  .langkah { margin: 18px 0 8px; font-size: 14px; font-weight: 600; color: var(--teks); }
+  .langkah:first-child { margin-top: 0; }
+  .zona { display: block; border: 2px dashed #3a3a3a; border-radius: 10px; padding: 22px 12px; text-align: center;
+          cursor: pointer; margin: 0; color: var(--teks); }
+  .zona:hover, .zona.tarik { border-color: var(--aksen); background: #232b2b; }
+  .zona input { display: none; }
+  .zona b { display: block; font-size: 15px; }
+  .zona small { color: var(--redup); }
+  .opsional { display: flex; gap: 8px; margin-top: 8px; }
+  .opsional label { flex: 1; margin: 0; border: 1px solid var(--garis); border-radius: 6px; padding: 5px 8px;
+                    cursor: pointer; background: #2a2a2a; color: var(--teks); min-width: 0; }
+  .opsional label:hover { border-color: #555; }
+  .opsional input { display: none; }
+  .opsional small { display: block; color: var(--redup); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #mKlip { margin-top: 8px; }
+  .kartu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kartu { display: block; text-align: left; padding: 6px; border: 2px solid var(--garis); border-radius: 8px;
+           background: #262626; min-width: 0; }
+  .kartu.aktif { border-color: var(--aksen); box-shadow: 0 0 0 1px var(--aksen); background: #1f2c2c; }
+  .kartu .gambar { aspect-ratio: 4 / 5; background: #000; border-radius: 4px; position: relative; overflow: hidden;
+                   margin-bottom: 6px; }
+  .kartu .gambar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .kartu.menunggu .gambar::after { content: ""; position: absolute; inset: 0; background-size: 200% 100%;
+    background: linear-gradient(100deg, #252525 30%, #353535 50%, #252525 70%) 0 0 / 200% 100%;
+    animation: kilau 1.2s linear infinite; }
+  @keyframes kilau { to { background-position: -200% 0; } }
+  .kartu .nama { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kartu small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+                 color: var(--redup); font-size: 11px; line-height: 1.3; }
+  .pilihan { display: flex; gap: 8px; }
+  .pil { flex: 1; padding: 10px 6px; border-radius: 999px; }
+  .pil.aktif { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+  .petunjuk { color: var(--redup); font-size: 12px; margin-top: 4px; }
+  .catatan p { margin: 6px 0 0; color: var(--redup); font-size: 12px; }
+  .simpan { position: sticky; bottom: 0; background: var(--panel); padding: 10px 0 12px; margin-top: 14px; }
+  .simpan .utama { width: 100%; padding: 12px; font-size: 15px; border-radius: 8px; }
+  #mStatus { color: var(--redup); font-size: 12px; margin-top: 6px; min-height: 17px; }
+  #mStatus.galat { color: var(--galat); }
+  #mHasil button { margin-top: 6px; }
+
+  /* edit otomatis */
+  .eo { border: 1px solid var(--aksen); border-radius: 10px; padding: 12px; background: #1b2626; }
+  .eo .utama { width: 100%; padding: 12px; font-size: 15px; border-radius: 8px; }
+  .eo small { display: block; color: var(--redup); font-size: 12px; margin-top: 6px; }
+  .eoprog { margin-top: 10px; }
+  .eobar { height: 4px; border-radius: 2px; background: #2c3a3a; overflow: hidden; position: relative; }
+  .eobar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 35%; background: var(--aksen);
+                  animation: geserbar 1.1s ease-in-out infinite alternate; }
+  @keyframes geserbar { from { left: 0; } to { left: 65%; } }
+  #eoLog { margin-top: 6px; font-size: 12px; color: var(--teks); }
+  .eogalat { margin-top: 10px; color: var(--galat); font-size: 12px; }
+  .eogalat button { margin-top: 6px; }
+  #eoHasil { margin-top: 10px; }
+  #eoRingkas { margin: 0 0 2px; }
+  #eoStat { color: var(--redup); font-size: 12px; margin-bottom: 8px; }
+  .vkartu { display: block; text-align: left; padding: 6px; border: 2px solid var(--garis); border-radius: 8px;
+            background: #262626; min-width: 0; }
+  .vkartu.aktif { border-color: var(--aksen); box-shadow: 0 0 0 1px var(--aksen); background: #1f2c2c; }
+  .vkartu .gambar { aspect-ratio: 4 / 5; background: #000; border-radius: 4px; position: relative; overflow: hidden;
+                    margin-bottom: 6px; }
+  .vkartu .gambar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .vkartu.menunggu .gambar::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(100deg, #252525 30%, #353535 50%, #252525 70%) 0 0 / 200% 100%;
+    animation: kilau 1.2s linear infinite; }
+  .vkartu .nama { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vkartu small { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+                  color: var(--redup); font-size: 11px; line-height: 1.3; }
+  #eoEditor { margin-top: 10px; }
+  #eoEditor summary { cursor: pointer; font-weight: 600; margin-bottom: 6px; }
+  .eoBaris { display: grid; grid-template-columns: 104px 1fr 28px; gap: 4px 6px; align-items: center;
+             border-top: 1px solid var(--garis); padding: 6px 0; }
+  .eoBaris .waktuEo { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; color: var(--redup); font-size: 12px; }
+  .eoBaris button { padding: 2px 0; }
+  input[type=number] { width: 70px; background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 4px 6px; }
+  #eoTambah { margin-top: 6px; }
+  #mModeSimpan { color: var(--aksen); font-size: 12px; margin-bottom: 6px; }
+
+  /* poster film */
+  #alurBiasa > .langkah:first-child { margin-top: 18px; }
+  .pst { border: 1px solid var(--garis); border-radius: 10px; padding: 12px; margin-top: 10px; background: #232323; }
+  .pst button { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; }
+  .pst small { display: block; color: var(--redup); font-size: 12px; margin-top: 6px; }
+  .phead { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+  .phead b { font-size: 14px; }
+  #alurPoster .pdua { display: flex; gap: 8px; }
+  #alurPoster .pdua > div { flex: 1; min-width: 0; }
+  #alurPoster input[type=time], #alurPoster input[type=text] { width: 100%; background: #2a2a2a; border: 1px solid var(--garis);
+    border-radius: 6px; padding: 6px 8px; color-scheme: dark; }
+  .ppil { flex: 1; padding: 8px 4px; border-radius: 999px; min-width: 0; }
+  .ppil.aktif { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+  .pgeser { display: grid; grid-template-columns: 96px 1fr 44px; align-items: center; gap: 8px; margin: 7px 0; }
+  .pgeser span { color: var(--redup); }
+  .pgeser output { text-align: right; font-variant-numeric: tabular-nums; }
+  body.poster #waktu { display: none !important; }
+  #pStatus { color: var(--redup); font-size: 12px; margin-top: 6px; min-height: 17px; }
+  #pStatus.galat { color: var(--galat); }
+  #pHasil button { margin-top: 6px; }
+
+  /* desain */
+  #alurDesain input[type=text], #alurDesain textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--garis);
+    border-radius: 6px; padding: 6px 8px; color-scheme: dark; }
+  #alurDesain textarea { resize: vertical; font: inherit; color: inherit; }
+  #alurDesain .dg { display: none; }
+  #alurDesain .dg.aktif { display: block; }
+  #alurDesain .pilihan { flex-wrap: wrap; }
+  .dgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+  .dgrid.gulir { max-height: 230px; overflow-y: auto; padding-right: 4px; }
+  /* nama panjang turun ke baris kedua, tidak terpotong */
+  .dgrid .dpil { padding: 7px 6px; font-size: 12px; line-height: 1.25; white-space: normal; text-align: center; }
+  .dgrup { color: var(--redup); font-size: 11px; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .05em; }
+  .dpil { flex: 1 1 28%; padding: 8px 4px; border-radius: 999px; min-width: 0; }
+  .dpil.aktif { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+  #alurDesain details { margin-top: 12px; }
+  #alurDesain summary { cursor: pointer; font-weight: 600; }
+  .dpot { border-top: 1px solid var(--garis); padding: 8px 0; }
+  .dpot textarea { margin-top: 4px; }
+  .dtiga { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .ddua { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .dmedia { border: 1px solid var(--garis); border-radius: 8px; padding: 8px; margin-top: 8px; background: #262626; }
+  .dmedia .klip { margin-bottom: 6px; }
+  .dmedia input[type=text] { margin-top: 4px; }
+  #dMuat { color: var(--aksen); font-size: 12px; margin-top: 4px; }
+  .tengah { min-width: 0; }
+  .dslide { display: flex; gap: 12px; overflow-x: auto; width: 100%; min-width: 0; height: 100%; padding: 10px; }
+  .dslide figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; flex: none; }
+  .dslide img, .dslide video { flex: 1; min-height: 0; width: auto; max-width: none; max-height: none; object-fit: contain; }
+  .dslide a { color: var(--aksen); font-size: 12px; }
+  #dStatus { color: var(--redup); font-size: 12px; margin-top: 6px; min-height: 17px; }
+  #dStatus.galat { color: var(--galat); }
+  #dHasil button { margin-top: 6px; }
+
+  /* safe zone IG */
+  .safeTog { position: absolute; top: 8px; left: 10px; z-index: 3; margin: 0; display: flex; align-items: center; gap: 5px;
+             font-size: 11px; color: var(--redup); background: rgba(0,0,0,.55); padding: 2px 8px; border-radius: 999px; cursor: pointer; }
+  .safeTog input { margin: 0; accent-color: var(--aksen); }
+  #safe { position: absolute; display: none; pointer-events: none; z-index: 2; overflow: hidden; }
+  #safe i { position: absolute; background: rgba(255,70,70,.30); color: rgba(255,255,255,.85); font: normal 10px/1.2 "Segoe UI", sans-serif;
+            display: flex; align-items: center; justify-content: center; text-align: center; }
+  #safe .at { left: 0; right: 0; top: 0; height: 14%; }
+  #safe .bw { left: 0; right: 0; bottom: 0; height: 22%; }
+  #safe .kn { right: 0; top: 14%; bottom: 22%; width: 12%; }
+  #safe .ka { position: absolute; left: 0; top: 14%; right: 12%; bottom: 22%; border: 1.5px dashed rgba(255,255,255,.85); }
+  #safe .cat { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; font-size: 10px; color: rgba(255,255,255,.85);
+               text-shadow: 0 0 3px #000; display: none; }
+  #safe.r45 i, #safe.r45 .ka { display: none; }
+  #safe.r45 .cat { display: block; }
+
+  /* montage & batch */
+  #alurMontage input[type=text], #alurBatch input[type=text] { color-scheme: dark; }
+  .daftarPilih { margin-top: 8px; }
+  #moMuat, #baMuat { color: var(--aksen); font-size: 12px; margin-top: 4px; }
+  #moStatus, #baStatus { color: var(--redup); font-size: 12px; margin-top: 6px; min-height: 17px; }
+  #moStatus.galat, #baStatus.galat { color: var(--galat); }
+  #baLog { color: var(--teks); font-size: 12px; white-space: pre-wrap; margin-top: 6px; }
+  #moHasil button, #baHasil button { margin-top: 6px; }
+  .bItem { border: 1px solid var(--garis); border-radius: 8px; padding: 8px; margin-top: 8px; background: #262626; }
+  .bItem video, .bItem img { display: block; max-width: 100%; max-height: 200px; border-radius: 4px; background: #000; margin: 6px 0; }
+  .bItem .galatTeks { color: var(--galat); font-size: 12px; white-space: pre-wrap; }
+
+  /* caption */
+  #capDlg .dialog { width: 560px; max-height: 92vh; overflow: auto; }
+  #capDlg textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 8px; font: inherit;
+                     color: inherit; resize: vertical; margin-top: 8px; }
+  .capTab { display: flex; gap: 6px; flex-wrap: wrap; }
+  .capTab button { border-radius: 999px; padding: 4px 12px; }
+  .capTab button.aktif { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+  .capBaris { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .capBaris span { color: var(--redup); font-size: 12px; margin-right: auto; }
+  .capBaris span.lebih { color: var(--galat); }
+  #capCover img { display: block; max-height: 240px; max-width: 100%; border-radius: 6px; margin-top: 6px; }
+  #capCover a { color: var(--aksen); font-size: 12px; }
+  .latar { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 10; }
+  .dialog { background: var(--panel); border: 1px solid var(--garis); border-radius: 10px; padding: 18px; width: 380px; max-width: 92vw; }
+  .dialog input[type=password] { width: 100%; background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 6px 8px; }
+
+  /* bilah status */
+  .status { background: var(--panel); border-top: 1px solid var(--garis); padding: 0 12px; display: flex;
+            align-items: center; color: var(--redup); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .status.galat { color: var(--galat); }
+</style>
+</head>
+<body class="m-mudah">
+<div class="atas">
+  <b>FLP Studio</b>
+  <button id="tSetelan" title="Setelan">⚙ Setelan</button>
+  <div class="mode"><button id="bMudah">Mudah</button><button id="bEditor" title="Buka editor lengkap">✂ Full Edit</button></div>
+  <button class="hanyaPro" id="tMagic" disabled title="Gemini melihat videomu lalu mengisi semua pengaturan">Magic</button>
+  <button class="utama hanyaPro" id="tExport" disabled>Export</button>
+</div>
+
+<div class="isi">
+  <div class="kolom hanyaPro">
+    <h3>Media</h3>
+    <label class="media"><div>Video / Foto</div><small id="nVideo" data-n="video">pilih video atau foto</small>
+      <input type="file" accept="video/*,image/*" data-jenis="video" multiple></label>
+    <div id="daftarKlip"></div>
+    <label class="media"><div>Suara terpisah</div><small id="nAudio" data-n="audio">opsional</small>
+      <input type="file" accept="audio/*,video/*" data-jenis="audio"></label>
+    <label class="media"><div>Musik</div><small id="nMusik" data-n="musik">opsional</small>
+      <input type="file" accept="audio/*" data-jenis="musik"></label>
+    <div id="hasil"></div>
+  </div>
+
+  <div class="kolom mudah hanyaMudah">
+    <div class="langkah">1. Pilih video atau foto</div>
+    <label class="zona" id="zona"><b>Tarik video atau foto ke sini</b>
+      <small>atau klik untuk memilih (boleh beberapa video, nanti disambung)</small>
+      <small id="mProgres" data-n="video" style="display:block;color:var(--aksen)"></small>
+      <input type="file" accept="video/*,image/*" data-jenis="video" multiple></label>
+    <div id="mKlip"></div>
+    <div class="opsional" id="mOpsional">
+      <label>Suara terpisah <small data-n="audio">opsional</small>
+        <input type="file" accept="audio/*,video/*" data-jenis="audio"></label>
+      <label>Musik <small data-n="musik">opsional</small>
+        <input type="file" accept="audio/*" data-jenis="musik"></label>
+    </div>
+
+    <div id="alurBiasa">
+    <div class="langkah">2. Pilih gaya</div>
+    <div class="eo" id="eoKartu" style="display:none">
+      <button class="utama" id="eoMulai" disabled>Edit Otomatis</button>
+      <small>Gemini menonton videomu lalu mengedit: potong bagian jelek, pembuka yang menarik, teks, dan warna. Kamu tinggal pilih versi.</small>
+      <div class="eoprog" id="eoProgres" style="display:none"><div class="eobar"></div><div id="eoLog">Memulai…</div></div>
+      <div class="eogalat" id="eoGalat" style="display:none"><div id="eoGalatTeks"></div>
+        <button id="eoSetelan" style="display:none">Buka Setelan</button></div>
+      <div id="eoHasil" style="display:none">
+        <p id="eoRingkas"></p><div id="eoStat"></div>
+        <div class="kartu-grid" id="eoVersi"></div>
+        <details id="eoEditor" open><summary>Teks &amp; elemen</summary>
+          <label style="margin-top:0">Judul di awal (hook)</label>
+          <input type="text" id="eoHook" placeholder="Day 12 of|Learning in Public">
+          <div id="eoDaftar"></div>
+          <button id="eoTambah">+ Tambah teks</button>
+          <label class="cek"><input type="checkbox" id="eoSubtitle"><span>Subtitle otomatis</span></label>
+        </details>
+      </div>
+    </div>
+    <div class="pst"><button id="pstBuka" disabled title="Jadikan fotomu atau cuplikan videomu poster film"><b>Poster Film</b><small>jadikan momenmu poster film</small></button>
+      <small>Foto atau cuplikan video jadi poster film minimalis, lengkap dengan judul, tahun, dan nama-nama.</small></div>
+    <div class="pst"><button id="dsBuka" title="Jadikan fotomu halaman koran, tiket, polaroid, sampul majalah, atau carousel"><b>Desain</b><small>koran, tiket, polaroid, majalah, carousel</small></button>
+      <small>Foto atau video jadi halaman koran, tiket, polaroid, sampul majalah, atau carousel yang bisa digeser. Semua tulisan bisa kamu ubah.</small></div>
+    <div class="pst"><button id="moBuka" title="Gabungkan beberapa foto dan video jadi satu reel yang mengikuti ketukan musik"><b>Montage</b><small>foto &amp; video jadi satu reel</small></button>
+      <small>Foto &amp; video dipotong mengikuti ketukan musik otomatis.</small></div>
+    <div class="pst"><button id="baBuka" title="Edit banyak video sekaligus, lengkap dengan caption"><b>Banyak Sekaligus</b><small>edit semua dalam sekali jalan</small></button>
+      <small>Pilih banyak video atau foto; semuanya diedit otomatis dan diberi caption.</small></div>
+    <div class="petunjuk" id="eoAtau" style="display:none;margin:12px 0 6px">Atau pilih gaya sendiri:</div>
+    <div class="kartu-grid" id="kartu"></div>
+
+    <div class="langkah">3. Untuk di mana?</div>
+    <div class="pilihan" id="pilihan">
+      <button class="pil" data-r="9:16">Reels (9:16)</button>
+      <button class="pil" data-r="4:5">Feed (4:5)</button>
+      <button class="pil" data-r="asli">Ukuran asli</button>
+    </div>
+
+    <div class="langkah">4. Judul di awal (opsional)</div>
+    <input type="text" id="mHook" placeholder="Day 12 of|Learning in Public">
+    <div class="petunjuk">Tulis "baris kecil|Kata Besar" kalau mau judul 2 baris.</div>
+
+    <div class="langkah">Bingung memilih?</div>
+    <button id="mMagic" disabled style="width:100%;padding:9px">Pilihkan otomatis</button>
+    <div class="catatan" id="mCatatan"></div>
+
+    <div class="simpan">
+      <label class="cek" id="musikAutoBaris" title="Lagu dipilih otomatis dari folder musik/ dan mengecil saat kamu bicara."><input type="checkbox" id="musikAuto"><span id="musikAutoTeks">Musik latar otomatis</span></label>
+      <div id="mModeSimpan"></div>
+      <button class="utama" id="mSimpan" disabled>Simpan hasil</button>
+      <div id="mStatus">Siap</div>
+      <div id="mHasil"></div>
+    </div>
+    </div>
+
+    <div id="alurPoster" style="display:none">
+      <div class="phead"><button id="pKembali">← kembali</button><b>Poster Film</b></div>
+      <div class="petunjuk">Isi datanya, hasilnya langsung terlihat di layar tengah. Semua boleh dikosongkan.</div>
+      <label>Judul</label><input type="text" id="pJudul" placeholder="Judul filmmu">
+      <label>Tahun</label><input type="text" id="pTahun" inputmode="numeric">
+      <div class="pdua"><div><label>Jam mulai</label><input type="time" id="pJamMulai"></div>
+        <div><label>Jam selesai</label><input type="time" id="pJamSelesai"></div></div>
+      <label>Running time</label><input type="text" id="pRunning">
+      <label>Directed by</label><input type="text" id="pSutradara" placeholder="nama sutradara">
+      <label>Produced by</label><input type="text" id="pProduser" placeholder="nama produser">
+      <label>Starring</label><input type="text" id="pPemain" placeholder="Nama 1, Nama 2, Nama 3">
+      <div class="petunjuk">Pisahkan nama dengan koma.</div>
+
+      <div class="langkah">Bentuk</div>
+      <div class="pilihan">
+        <button class="ppil" data-pr="2:3">2:3 Poster</button>
+        <button class="ppil" data-pr="4:5">4:5 Feed</button>
+        <button class="ppil" data-pr="9:16">9:16 Story</button>
+      </div>
+      <div class="langkah">Tema</div>
+      <div class="pilihan">
+        <button class="ppil" data-tm="kertas">Kertas</button>
+        <button class="ppil" data-tm="krem">Krem</button>
+        <button class="ppil" data-tm="gelap">Gelap</button>
+      </div>
+      <div class="langkah">Warna</div>
+      <select id="pWarna"></select>
+
+      <div id="pCuplikan">
+        <div class="langkah">Cuplikan</div>
+        <div class="pgeser"><span>Mulai dari</span><input type="range" id="pMulai" min="0" max="10" step="0.5" value="0"><output id="pMulaiL">0:00</output></div>
+        <div class="pgeser"><span>Panjang</span><input type="range" id="pDurasi" min="2" max="10" step="0.5" value="10"><output id="pDurasiL">10 dtk</output></div>
+      </div>
+
+      <div class="langkah">Kalau gambarnya tidak pas</div>
+      <label class="cek" style="margin-top:0"><input type="checkbox" id="pManual"><span>Atur posisi sendiri</span></label>
+      <div id="pCropBox" style="display:none">
+        <div class="pgeser"><span>Kiri ↔ Kanan</span><input type="range" id="pX" min="0" max="1" step="0.01" value="0.5"><output id="pXL">50%</output></div>
+        <div class="pgeser"><span>Atas ↔ Bawah</span><input type="range" id="pY" min="0" max="1" step="0.01" value="0.5"><output id="pYL">50%</output></div>
+        <div class="pgeser"><span>Zoom</span><input type="range" id="pZoom" min="1" max="3" step="0.05" value="1"><output id="pZoomL">1.00x</output></div>
+        <button id="pOtomatis">Otomatis</button>
+        <div class="petunjuk">Kamu juga bisa menggeser gambar langsung di layar tengah.</div>
+      </div>
+
+      <div class="simpan">
+        <button class="utama" id="pSimpan" disabled>Simpan poster</button>
+        <div id="pStatus">Siap</div>
+        <div id="pHasil"></div>
+      </div>
+    </div>
+
+    <div id="alurDesain" style="display:none">
+      <div class="phead"><button id="dKembali">← kembali</button><b>Desain</b></div>
+      <div class="petunjuk">Pilih gaya, isi tulisannya, hasilnya langsung terlihat di layar tengah. Semua tulisan boleh diubah atau dikosongkan.</div>
+
+      <div class="langkah">Gaya</div>
+      <div class="dgrup" style="margin-top:0">Utama</div>
+      <div class="dgrid">
+        <button class="dpil" data-dg="koran">Koran</button>
+        <button class="dpil" data-dg="tiket">Tiket</button>
+        <button class="dpil" data-dg="polaroid">Polaroid</button>
+        <button class="dpil" data-dg="majalah">Majalah</button>
+        <button class="dpil" data-dg="carousel">Carousel</button>
+      </div>
+      <div class="dgrup" id="dKoleksiJudul" style="display:none">Koleksi kenangan</div>
+      <div class="dgrid gulir" id="dKoleksi" style="display:none"></div>
+      <div class="petunjuk" id="dDesk"></div>
+
+      <div class="dg" data-g="koran">
+        <label>Nama koran</label><input type="text" data-k="nama" placeholder="The Quiet Daily">
+        <div class="ddua"><div><label>Tempat</label><input type="text" data-k="tempat" placeholder="mis. Jakarta"></div>
+          <div><label>Tanggal</label><input type="text" data-k="tanggal" placeholder="October 2026"></div></div>
+        <label>Judul utama</label><input type="text" data-k="judul" placeholder="Some days are worth the front page.">
+        <label>Sub judul</label><input type="text" data-k="sub">
+        <label>Keterangan foto</label><input type="text" data-k="keterangan">
+        <details><summary>Potongan koran di samping</summary>
+          <div class="petunjuk">Empat potongan berita kecil di sisi halaman.</div>
+          <div id="dPotongan"></div>
+          <button id="dSimpanIsi">Simpan sebagai isi bawaan</button>
+          <div class="petunjuk" id="dIsiInfo"></div>
+        </details>
+      </div>
+      <div class="dg" data-g="tiket">
+        <label>Judul</label><input type="text" data-k="judul">
+        <label>Label</label><input type="text" data-k="label" placeholder="ADMIT ONE">
+        <div class="ddua"><div><label>Tanggal</label><input type="text" data-k="tanggal"></div>
+          <div><label>Jam</label><input type="text" data-k="jam"></div></div>
+        <div class="ddua"><div><label>Tempat</label><input type="text" data-k="tempat"></div>
+          <div><label>Kursi</label><input type="text" data-k="kursi"></div></div>
+      </div>
+      <div class="dg" data-g="polaroid">
+        <label>Tulisan tangan di bawah foto</label><input type="text" data-k="teks">
+        <label>Tanggal</label><input type="text" data-k="tanggal">
+      </div>
+      <div class="dg" data-g="majalah">
+        <label>Nama majalah</label><input type="text" data-k="nama" placeholder="HANGAT">
+        <label>Tanggal</label><input type="text" data-k="tanggal">
+        <label>Judul sampul</label><input type="text" data-k="judul">
+        <label>Tiga tulisan kecil di sampul</label>
+        <div class="dtiga"><input type="text" data-k="cerita"><input type="text" data-k="cerita"><input type="text" data-k="cerita"></div>
+        <label>Kutipan</label><input type="text" data-k="kutipan">
+      </div>
+      <div id="dDinamis"></div>
+      <div class="dg" data-g="carousel">
+        <label>Judul</label><input type="text" data-k="judul" placeholder="Cerita kecil">
+        <label>Sub judul</label><input type="text" data-k="sub">
+        <div class="ddua"><div><label>Tempat (cap)</label><input type="text" data-k="cap"></div>
+          <div><label>Tanggal (cap)</label><input type="text" data-k="cap"></div></div>
+        <label>Tulisan slide penutup (opsional)</label><input type="text" data-k="penutup">
+        <div class="langkah">Foto dan video</div>
+        <label class="zona" id="dZona" style="padding:14px 10px"><b>Pilih foto atau video</b>
+          <small>boleh beberapa sekaligus; urutannya bisa diatur</small>
+          <input type="file" id="dFile" accept="video/*,image/*" multiple></label>
+        <div id="dMuat"></div>
+        <div id="dMedia"></div>
+      </div>
+
+      <div id="dBentuk">
+        <div class="langkah">Bentuk</div>
+        <div class="pilihan">
+          <button class="dpil" data-dr="16:9">16:9 Lebar</button>
+          <button class="dpil" data-dr="9:16">9:16 Story</button>
+          <button class="dpil" data-dr="4:5">4:5 Feed</button>
+          <button class="dpil" data-dr="1:1">1:1 Kotak</button>
+        </div>
+      </div>
+      <div class="langkah">Warna</div>
+      <select id="dWarna"></select>
+
+      <div id="dCuplikan">
+        <div class="langkah">Cuplikan</div>
+        <div class="pgeser"><span>Mulai dari</span><input type="range" id="dMulai" min="0" max="10" step="0.5" value="0"><output id="dMulaiL">0:00</output></div>
+        <div class="pgeser"><span>Panjang</span><input type="range" id="dDurasi" min="2" max="10" step="0.5" value="10"><output id="dDurasiL">10 dtk</output></div>
+      </div>
+
+      <div id="dCrop">
+        <div class="langkah">Kalau gambarnya tidak pas</div>
+        <label class="cek" style="margin-top:0"><input type="checkbox" id="dManual"><span>Atur posisi sendiri</span></label>
+        <div id="dCropBox" style="display:none">
+          <div class="pgeser"><span>Kiri ↔ Kanan</span><input type="range" id="dX" min="0" max="1" step="0.01" value="0.5"><output id="dXL">50%</output></div>
+          <div class="pgeser"><span>Atas ↔ Bawah</span><input type="range" id="dY" min="0" max="1" step="0.01" value="0.5"><output id="dYL">50%</output></div>
+          <div class="pgeser"><span>Zoom</span><input type="range" id="dZoom" min="1" max="3" step="0.05" value="1"><output id="dZoomL">1.00x</output></div>
+          <button id="dOtomatis">Otomatis</button>
+          <div class="petunjuk">Kamu juga bisa menggeser gambar langsung di layar tengah.</div>
+        </div>
+      </div>
+
+      <div class="simpan">
+        <button class="utama" id="dSimpan" disabled>Simpan desain</button>
+        <div id="dStatus">Siap</div>
+        <div id="dHasil"></div>
+      </div>
+    </div>
+
+    <div id="alurMontage" style="display:none">
+      <div class="phead"><button id="moKembali">← kembali</button><b>Montage</b></div>
+      <div class="petunjuk">Foto &amp; video dipotong mengikuti ketukan musik otomatis.</div>
+      <div class="langkah">Foto dan video</div>
+      <label class="zona" id="moZona" style="padding:14px 10px"><b>Pilih foto atau video</b>
+        <small>boleh beberapa sekaligus; urutannya bisa diatur</small>
+        <input type="file" id="moFile" accept="video/*,image/*" multiple></label>
+      <div id="moMuat"></div>
+      <div class="daftarPilih" id="moDaftar"></div>
+      <label>Judul pembuka (opsional)</label>
+      <input type="text" id="moJudul" placeholder="Day 12 of|Learning in Public">
+      <div class="petunjuk">Tulis "baris kecil|Kata Besar" kalau mau judul 2 baris.</div>
+      <div class="langkah">Warna</div>
+      <select id="moWarna"></select>
+      <div class="langkah">Bentuk</div>
+      <div class="pilihan">
+        <button class="dpil" data-mr="9:16">9:16 Reels</button>
+        <button class="dpil" data-mr="4:5">4:5 Feed</button>
+        <button class="dpil" data-mr="1:1">1:1 Kotak</button>
+      </div>
+      <div class="simpan">
+        <button class="utama" id="moBuat" disabled>Buat montage</button>
+        <div id="moStatus">Siap</div>
+        <div id="moHasil"></div>
+      </div>
+    </div>
+
+    <div id="alurBatch" style="display:none">
+      <div class="phead"><button id="baKembali">← kembali</button><b>Banyak Sekaligus</b></div>
+      <div class="petunjuk">Setiap video ditranskrip, dipilihkan tampilan, dirender, lalu diberi caption. Ini bisa memakan waktu beberapa menit.</div>
+      <div class="langkah">Video dan foto</div>
+      <label class="zona" id="baZona" style="padding:14px 10px"><b>Pilih video atau foto</b>
+        <small>boleh banyak sekaligus</small>
+        <input type="file" id="baFile" accept="video/*,image/*" multiple></label>
+      <div id="baMuat"></div>
+      <div class="daftarPilih" id="baDaftar"></div>
+      <div class="langkah">Bentuk</div>
+      <div class="pilihan">
+        <button class="dpil" data-br="9:16">9:16 Reels</button>
+        <button class="dpil" data-br="4:5">4:5 Feed</button>
+        <button class="dpil" data-br="asli">Ukuran asli</button>
+      </div>
+      <label class="cek"><input type="checkbox" id="baCaption" checked><span>Buat caption juga</span></label>
+      <div class="simpan">
+        <button class="utama" id="baMulai" disabled>Edit semua</button>
+        <div id="baStatus">Siap</div>
+        <div id="baLog"></div>
+        <div id="baHasil"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tengah">
+    <div class="layar" id="layar"><span class="kosong">Pilih video atau foto untuk mulai</span>
+      <span class="memuat" id="memuat">memuat…</span>
+      <label class="safeTog" title="Tampilkan area yang tertutup tampilan Instagram Reels"><input type="checkbox" id="safeCek">Safe zone IG</label>
+      <div id="safe"><i class="at">nama akun &amp; judul</i><i class="kn">tombol</i><i class="bw">caption &amp; musik</i><div class="ka"></div>
+        <div class="cat">Feed 4:5: tidak ada area yang tertutup.</div></div></div>
+    <div class="waktu" id="waktu"><input type="range" id="t" min="0" max="10" step="0.1" value="1">
+      <span id="tLabel">0:01 / 0:10</span></div>
+  </div>
+
+  <div class="kolom kanan hanyaPro">
+    <div class="tab">
+      <button data-hal="teks" class="aktif">Teks</button>
+      <button data-hal="warna">Warna</button>
+      <button data-hal="atur">Atur</button>
+      <button data-hal="ai">AI</button>
+    </div>
+    <div class="halaman aktif" id="h-teks">
+      <label>Gaya teks</label><select id="gaya"></select><div class="desk" id="dGaya"></div>
+      <label>Hook (| = judul 2 baris)</label><input type="text" id="hook" placeholder="Day 12 of|Learning in Public">
+      <label>Font judul</label><select id="judul"></select>
+      <label>Bentuk video</label><select id="rasio"></select>
+      <div class="cek"><input type="checkbox" id="tanpaPotong"><span>jangan potong bagian hening</span></div>
+    </div>
+    <div class="halaman" id="h-warna">
+      <label>Preset warna</label><select id="warna"></select><div class="desk" id="dWarna"></div>
+    </div>
+    <div class="halaman" id="h-atur">
+      <div id="geser"></div>
+      <button id="tAuto" style="margin-top:8px" disabled title="Koreksi eksposur, kontras, dan warna hasil ukur dari videomu">Auto</button>
+      <button id="tReset" style="margin-top:8px">Reset</button>
+    </div>
+    <div class="halaman gemini" id="h-ai">
+      <p id="aiEdit" class="desk" style="display:none"></p>
+      <p id="aiKosong" class="desk">Tekan Magic: Gemini melihat 8 frame + transkrip, lalu mengisi gaya, warna,
+        hook, dan pengaturan. Video utuh tidak diunggah.</p>
+      <p id="gMasalah"></p><p id="gAlasan"></p>
+    </div>
+  </div>
+</div>
+
+<div id="setelan" class="latar">
+  <div class="dialog">
+    <h3>Setelan</h3>
+    <label class="cek" style="color:var(--teks);margin-top:0"><input type="checkbox" id="sOnline"><span>Boleh pakai internet (Gemini)</span></label>
+    <div class="petunjuk">Kalau mati, Pilihkan otomatis tetap jalan offline: koreksi dari pengukuran + template Vlog Hangat.</div>
+    <label>Kunci API Gemini</label>
+    <input type="password" id="sKunci" autocomplete="off">
+    <div class="petunjuk"><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--aksen)">aistudio.google.com/apikey</a></div>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+      <button class="utama" id="sSimpan">Simpan</button><button id="sTutup">Tutup</button>
+      <span id="sInfo" class="petunjuk" style="margin:0"></span></div>
+  </div>
+</div>
+
+<div id="capDlg" class="latar">
+  <div class="dialog">
+    <h3 style="margin-bottom:10px">Caption &amp; cover</h3>
+    <div id="capMinta">
+      <input type="text" id="capCatatan" placeholder="Konteks tambahan (opsional)">
+      <button class="utama" id="capBuat" style="margin-top:8px">Buat caption</button>
+    </div>
+    <div id="capStatus" class="petunjuk"></div>
+    <div id="capIsi" style="display:none">
+      <div id="capModel" class="petunjuk" style="display:none">model: offline — Gemini tidak tersedia, caption dibuat dari transkrip.</div>
+      <div class="capTab" id="capTab" style="margin-top:8px"></div>
+      <textarea id="capTeks" rows="9" readonly></textarea>
+      <div class="capBaris"><span id="capHitung"></span><button id="capSalin">Salin</button></div>
+      <div id="capCover"></div>
+    </div>
+    <div style="margin-top:14px"><button id="capTutup">Tutup</button></div>
+  </div>
+</div>
+
+<div class="status" id="status">Siap</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const file = { video: null, audio: null, musik: null };
+let klip = [], nomorGabung = 0, bergabung = false;  // klip: [{p, nama, durasi}] urut; file.video = hasil gabungan
+const LABEL = { eksposur: "Eksposur", kontras: "Kontras", saturasi: "Saturasi", suhu: "Suhu", tint: "Tint",
+  bayangan: "Bayangan", sorotan: "Sorotan", vignette: "Vignette", glow: "Glow", tajam: "Tajam", grain: "Grain" };
+let info, durasi = 10, timer = null, nomor = 0;
+let mode = "mudah", autoNilai = {}, templatTerpilih = null;
+let nomorContoh = 0, contohUntuk = "", versiGambar = 0;  // nomorContoh: antrean thumbnail yang berlaku
+// Edit Otomatis: edit = hasil /sutradara (dasar bisa diedit); editPakai = false setelah pengguna pilih template manual
+let edit = null, editPakai = false, versiPilih = 0, sedangEdit = false;
+let nomorEdit = 0, nomorVersi = 0, idEdit = 0, versiUntuk = "";
+const JENIS_ELEMEN = { judul: "Judul", label: "Label", kata: "Kata kunci", daftar: "Daftar", kutipan: "Kutipan",
+  tanggal: "Tanggal", penutup: "Penutup" };
+
+const status = (teks, galat) => {
+  $("status").textContent = teks; $("status").className = "status" + (galat ? " galat" : "");
+  $("mStatus").textContent = teks; $("mStatus").className = galat ? "galat" : "";
+  $("pStatus").textContent = teks; $("pStatus").className = galat ? "galat" : "";
+  $("dStatus").textContent = teks; $("dStatus").className = galat ? "galat" : "";
+  $("moStatus").textContent = teks; $("moStatus").className = galat ? "galat" : "";
+  $("baStatus").textContent = teks; $("baStatus").className = galat ? "galat" : "";
+};
+const menit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const minGeser = k => ["vignette", "glow", "tajam", "grain"].includes(k) ? 0 : -100;
+const tulis = (jenis, teks) => document.querySelectorAll(`[data-n="${jenis}"]`).forEach(e => e.textContent = teks);
+
+async function api(url, data) {
+  const r = await fetch(url, data === undefined ? {} : { method: "POST", body: JSON.stringify(data) });
+  const j = await r.json();
+  if (j.galat) throw new Error(j.galat);
+  return j;
+}
+
+function isi(sel, obj, kosong) {
+  sel.innerHTML = (kosong ? `<option value="">${kosong}</option>` : "") +
+    Object.keys(obj).map(k => `<option value="${k}">${k}</option>`).join("");
+}
+
+// tombol yang mati selama tidak ada media / sedang bekerja
+const kunciId = { magic: ["tMagic", "mMagic", "eoMulai", "pstBuka"], export: ["tExport", "mSimpan", "eoMulai", "pSimpan"] };
+function kunci(jenis, mati) { kunciId[jenis].forEach(id => $(id).disabled = mati); }
+function kunciSemua(mati) {
+  kunci("magic", mati); kunci("export", mati); $("tAuto").disabled = mati;
+  kunciKartu(mati);
+}
+function kunciKartu(mati) { document.querySelectorAll(".kartu").forEach(k => k.disabled = mati); }
+
+async function mulai() {
+  info = await api("/info");
+  isi($("gaya"), info.gaya); isi($("warna"), info.warna, "ikut gaya teks"); isi($("judul"), info.judul, "ikut gaya teks");
+  isi($("pWarna"), info.warna);
+  $("pWarna").insertAdjacentHTML("afterbegin", '<option value="serasi">Serasi dengan poster (otomatis)</option>');
+  $("pWarna").value = "serasi";
+  isi($("moWarna"), info.warna); $("moWarna").value = "matte";
+  $("rasio").innerHTML = info.rasio.map(r => `<option>${r}</option>`).join("");
+  $("gaya").value = "hangat-kotak"; $("warna").value = "asli";
+  $("geser").innerHTML = info.atur.map(k => {
+    return `<div class="geser"><span>${LABEL[k]}</span><input type="range" id="a_${k}" min="${minGeser(k)}" max="100" value="0">
+      <output id="o_${k}">0</output></div>`;
+  }).join("");
+  info.atur.forEach(k => $("a_" + k).addEventListener("input", e => { $("o_" + k).textContent = e.target.value; lepasKartu(); nanti(); }));
+  ["gaya", "warna", "judul", "rasio", "tanpaPotong"].forEach(id => $(id).addEventListener("change", () => { desk(); nanti(); }));
+  ["gaya", "warna", "judul"].forEach(id => $(id).addEventListener("change", lepasKartu));
+  $("rasio").addEventListener("change", () => { sinkronRasio(); muatContoh(); muatVersi(); });
+  $("hook").addEventListener("input", () => { $("mHook").value = $("eoHook").value = $("hook").value; nanti(700); });
+  $("mHook").addEventListener("input", () => { $("hook").value = $("eoHook").value = $("mHook").value; nanti(700); });
+  $("eoHook").addEventListener("input", () => { $("hook").value = $("mHook").value = $("eoHook").value; nanti(700); });
+  Object.entries(info.template || {}).forEach(([nama, t]) => {
+    const k = document.createElement("button");
+    k.className = "kartu"; k.dataset.nama = nama; k.disabled = !file.video || bergabung; k.title = t.desk || "";
+    k.innerHTML = `<div class="gambar"><img alt=""></div><div class="nama"></div><small></small>`;
+    k.querySelector(".nama").textContent = nama; k.querySelector("small").textContent = t.desk || "";
+    k.onclick = () => terapkanTemplate(nama);
+    $("kartu").append(k);
+  });
+  document.querySelectorAll(".pil").forEach(b => b.onclick = () => {
+    $("rasio").value = b.dataset.r; $("rasio").dispatchEvent(new Event("change"));
+  });
+  desk(); sinkronRasio();
+  setInterval(() => fetch("/ping").catch(() => {}), 5000);  // supaya server tahu jendela masih terbuka
+}
+
+function desk() {
+  $("dGaya").textContent = info.gaya[$("gaya").value] || "";
+  $("dWarna").textContent = $("warna").value ? info.warna[$("warna").value] : "pakai warna bawaan gaya teks";
+}
+
+function sinkronRasio() {
+  document.querySelectorAll(".pil").forEach(b => b.classList.toggle("aktif", b.dataset.r === $("rasio").value));
+}
+
+// mode Pro lama tidak bisa dibuka lagi; kontrolnya tetap ada karena alur Mudah memakainya
+$("bMudah").classList.add("aktif");
+$("bMudah").onclick = () => { if (posterAktif) keluarPoster(); if (desainAktif) keluarDesain(); if (panelBaru) keluarPanelBaru(); };
+
+document.querySelectorAll(".tab button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab button, .halaman").forEach(e => e.classList.remove("aktif"));
+  b.classList.add("aktif"); $("h-" + b.dataset.hal).classList.add("aktif");
+});
+
+function opsi() {
+  const atur = {};
+  info.atur.forEach(k => atur[k] = +$("a_" + k).value);
+  return { video: file.video, audio: file.audio, musik: file.musik, gaya: $("gaya").value, warna: $("warna").value,
+    judul: $("judul").value, hook: $("hook").value.trim(), rasio: $("rasio").value,
+    tanpa_potong: $("tanpaPotong").checked, atur, t: +$("t").value,
+    bingkai: edit && editPakai ? edit.dasar.bingkai || "isi" : "isi" };
+}
+
+function unggah(f, jenis, ket = "") {
+  return new Promise((ok, gagal) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", `/unggah?jenis=${jenis}&nama=${encodeURIComponent(f.name)}`);
+    x.upload.onprogress = e => tulis(jenis, `memuat ${Math.round(e.loaded / e.total * 100)}%${ket}`);
+    x.onload = () => { const r = JSON.parse(x.responseText); r.galat ? gagal(new Error(r.galat)) : ok(r); };
+    x.onerror = () => gagal(new Error("gagal memuat file"));
+    x.send(f);
+  });
+}
+
+// dipakai input file (Pro & Mudah) dan drag & drop
+async function muatFile(daftar, jenis) {
+  if (!daftar.length) return;
+  let tambah = false;
+  try {
+    for (const [i, f] of daftar.entries()) {
+      const j = await unggah(f, jenis, daftar.length > 1 ? ` (${i + 1}/${daftar.length})` : "");
+      if (jenis === "video") {
+        // foto diedit sendiri (tidak digabung): foto baru mengganti daftar, video baru mengganti foto
+        const k = { p: j.p, nama: f.name, durasi: j.durasi, foto: !j.durasi };
+        if (k.foto || klip.some(x => x.foto)) klip = [];
+        klip.push(k); tambah = true; daftarKlip();
+      }
+      else { file[jenis] = j.p; tulis(jenis, f.name); status(`${f.name} siap`); if (jenis === "audio") hapusEdit(); if (jenis === "musik") segarMusik(); }
+    }
+  } catch (e) { tulis(jenis, "gagal"); status(e.message, true); }
+  if (tambah) await gabungkan();
+}
+
+document.querySelectorAll("input[data-jenis]").forEach(inp => inp.addEventListener("change", () => {
+  const daftar = [...inp.files]; inp.value = "";  // dikosongkan supaya file yang sama bisa dipilih lagi
+  muatFile(daftar, inp.dataset.jenis);
+}));
+
+// seret file ke zona; di luar zona jangan sampai browser membuka filenya
+["dragover", "drop"].forEach(n => window.addEventListener(n, e => e.preventDefault()));
+$("zona").addEventListener("dragover", () => $("zona").classList.add("tarik"));
+$("zona").addEventListener("dragleave", () => $("zona").classList.remove("tarik"));
+$("zona").addEventListener("drop", e => {
+  $("zona").classList.remove("tarik");
+  const daftar = [...e.dataTransfer.files].filter(f => /^(video|image)\//.test(f.type));
+  if (daftar.length) muatFile(daftar, "video"); else status("Pilih file video atau foto", true);
+});
+
+function daftarKlip() {
+  $("nVideo").textContent = klip.length ? (klip[0].foto ? "1 foto" : `${klip.length} klip`) : "pilih video atau foto";
+  $("mProgres").textContent = "";
+  $("mOpsional").style.display = klip.length && klip[0].foto ? "none" : "";  // foto tidak butuh suara/musik
+  $("musikAutoBaris").style.display = klip.length && klip[0].foto ? "none" : ""; segarMusik();
+  segarEo();
+  for (const wadah of [$("daftarKlip"), $("mKlip")]) {
+    wadah.innerHTML = "";
+    klip.forEach((k, i) => {
+      const baris = document.createElement("div"); baris.className = "klip";
+      const nama = document.createElement("span"); nama.textContent = `${i + 1}. ${k.nama}`; nama.title = k.nama;
+      baris.append(nama);
+      for (const [teks, aksi, mati] of [["↑", () => geserKlip(i, -1), i === 0], ["↓", () => geserKlip(i, 1), i === klip.length - 1],
+                                        ["✕", () => { klip.splice(i, 1); daftarKlip(); gabungkan(); }, false]]) {
+        const b = document.createElement("button"); b.textContent = teks; b.disabled = mati; b.onclick = aksi; baris.append(b);
+      }
+      wadah.append(baris);
+    });
+  }
+}
+
+function geserKlip(i, arah) {
+  [klip[i], klip[i + arah]] = [klip[i + arah], klip[i]]; daftarKlip(); gabungkan();
+}
+
+// Daftar klip berubah -> gabung (kalau >1), lalu video kerja = hasilnya. Satu klip tidak perlu gabung.
+async function gabungkan() {
+  const n = ++nomorGabung;
+  nomorContoh++; contohUntuk = "";  // thumbnail lama basi
+  document.querySelectorAll(".kartu").forEach(k => k.classList.remove("menunggu"));
+  hapusEdit();  // media berubah -> hasil Edit Otomatis lama tidak berlaku lagi
+  if (!klip.length) {
+    file.video = null; bergabung = false; kunciSemua(true); segarEo();
+    if (posterAktif) keluarPoster();
+    status("Siap"); return;
+  }
+  bergabung = true; kunciSemua(true);
+  try {
+    let r = klip[0];
+    if (klip.length > 1) {
+      status(`Menggabungkan ${klip.length} klip…`);
+      r = await tunggu((await api("/gabung", { videos: klip.map(k => k.p) })).id);
+    }
+    if (n !== nomorGabung) return;  // daftar sudah berubah lagi; hasil ini basi
+    file.video = r.p; durasi = r.durasi; $("t").max = Math.max(0.1, durasi - 0.1); $("t").value = Math.min(1, durasi / 2);
+    $("waktu").style.display = durasi ? "" : "none";  // foto tidak punya waktu
+    bergabung = false; kunciSemua(false); waktu(); segarEo();
+    if (posterAktif) siapPoster();
+    if (desainAktif) siapDesain();
+    status(klip.length > 1 ? `${klip.length} klip digabung` : `${klip[0].nama} siap`);
+    const pilih = templatTerpilih || Object.keys(info.template || {})[0];
+    await otomatis();  // koreksi awal dari hasil ukur, lalu preview
+    if (n !== nomorGabung) return;
+    if (pilih) terapkanTemplate(pilih);  // bawaan = template pertama ("Asli": warna seperti video aslinya)
+    muatContoh(true);
+  } catch (e) {
+    if (n === nomorGabung) { bergabung = false; status(e.message, true); }
+  }
+}
+
+function terapkan(atur) {
+  info.atur.forEach(k => { $("a_" + k).value = atur[k] ?? 0; $("o_" + k).textContent = atur[k] ?? 0; });
+}
+
+async function otomatis() {
+  status("Mengukur warna video…");
+  const v = file.video;
+  try {
+    const a = await api("/otomatis", { video: v });
+    if (v !== file.video) return;
+    autoNilai = a; terapkan(a); lepasKartu();
+    status("Koreksi warna otomatis diterapkan");
+  } catch (e) { status(e.message, true); }
+  nanti(0);
+}
+
+function lepasKartu() { pilihKartu(null); }
+function pilihKartu(nama) {
+  templatTerpilih = nama;
+  document.querySelectorAll(".kartu").forEach(k => k.classList.toggle("aktif", k.dataset.nama === nama));
+  labelSimpan();
+}
+
+// template = gaya + warna + font + (koreksi otomatis + selisih template), dibatasi rentang slider
+function terapkanTemplate(nama) {
+  const t = info.template[nama]; if (!t) return;
+  editPakai = false; tandaiVersi();  // pilih template = kembali ke alur manual
+  $("gaya").value = t.gaya; $("warna").value = t.warna || ""; $("judul").value = t.judul || "";
+  const atur = {};
+  info.atur.forEach(k => {
+    const dasar = t.tanpa_auto ? 0 : (autoNilai[k] || 0);  // template "Asli": tanpa koreksi otomatis
+    const nilai = Math.round(dasar + ((t.atur || {})[k] || 0));
+    atur[k] = Math.max(minGeser(k), Math.min(100, nilai));
+  });
+  terapkan(atur); desk(); pilihKartu(nama); nanti(0);
+  status(t.tanpa_auto ? "Warna asli video dipakai (tidak diubah)" : `Template ${nama} dipakai`);
+}
+
+// thumbnail tiap template dari media sendiri, 2 sekaligus; antrean lama ditinggalkan kalau media/rasio berubah
+async function muatContoh(paksa) {
+  if (mode !== "mudah" || !file.video || bergabung || panelAktif()) return;
+  const kunciContoh = file.video + "|" + $("rasio").value;
+  if (!paksa && kunciContoh === contohUntuk) return;
+  const n = ++nomorContoh; contohUntuk = kunciContoh;
+  const video = file.video, rasio = $("rasio").value, t = +$("t").value, hook = $("hook").value.trim();
+  const kartu = [...document.querySelectorAll(".kartu")];
+  kartu.forEach(k => k.classList.add("menunggu"));
+  const antre = kartu.slice();
+  const kerja = async () => {
+    while (antre.length && n === nomorContoh) {
+      const k = antre.shift();
+      try {
+        const j = await api("/contoh", { video, template: k.dataset.nama, rasio, t, hook });
+        if (n !== nomorContoh) return;
+        k.querySelector("img").src = `/file?p=${encodeURIComponent(j.p)}&v=${++versiGambar}`;
+      } catch (e) { if (n === nomorContoh) status(e.message, true); }
+      if (n === nomorContoh) k.classList.remove("menunggu");
+    }
+  };
+  await Promise.all([kerja(), kerja()]);
+}
+
+function waktu() { $("tLabel").textContent = `${menit(+$("t").value)} / ${menit(durasi)}`; }
+$("t").addEventListener("input", () => { waktu(); nanti(250); });
+$("tAuto").onclick = otomatis;
+$("tReset").onclick = () => { info.atur.forEach(k => { $("a_" + k).value = 0; $("o_" + k).textContent = 0; }); lepasKartu(); nanti(); };
+
+const panelAktif = () => posterAktif || desainAktif || !!panelBaru;  // panel Poster / Desain menggantikan alur biasa
+function nanti(jeda = 400) { if (!file.video || panelAktif()) return; clearTimeout(timer); timer = setTimeout(pratinjau, jeda); }
+
+function tampil(el) {
+  const l = $("layar"); l.querySelectorAll("img,video,.kosong").forEach(e => e.remove()); l.prepend(el);
+}
+
+async function pratinjau() {
+  const n = ++nomor; $("memuat").style.display = "block";
+  try {
+    const j = await api("/pratinjau", opsi());
+    if (n !== nomor || panelAktif()) return;  // sudah ada permintaan yang lebih baru
+    const img = new Image(); img.onload = () => { if (!panelAktif()) tampil(img); }; img.src = "/file?p=" + encodeURIComponent(j.p);
+  } catch (e) { status(e.message, true); }
+  finally { if (n === nomor) $("memuat").style.display = "none"; }
+}
+
+async function tunggu(id, saat) {  // saat(baris, semuaLog): pengganti status() kalau diberikan
+  for (;;) {
+    const s = await api("/status?id=" + id);
+    if (s.log.length) { if (saat) saat(s.log[s.log.length - 1], s.log); else status(s.log[s.log.length - 1]); }
+    if (s.selesai) { if (s.galat) throw new Error(s.galat); return s.hasil; }
+    await new Promise(r => setTimeout(r, 700));
+  }
+}
+
+async function magic() {
+  kunci("magic", true); status("Magic: memulai…");
+  try {
+    const r = await tunggu((await api("/magic", opsi())).id);
+    $("gaya").value = r.gaya; $("warna").value = r.warna; $("judul").value = r.judul;
+    $("hook").value = $("mHook").value = r.hook;
+    info.atur.forEach(k => { $("a_" + k).value = r.atur[k]; $("o_" + k).textContent = r.atur[k]; });
+    $("aiKosong").style.display = "none";
+    const luring = r.model === "offline" ? " (dibuat offline)" : "";
+    $("gMasalah").innerHTML = "<b>Yang dilihat</b>" + r.masalah;
+    $("gAlasan").innerHTML = "<b>Kenapa begini</b>" + r.alasan + luring;
+    $("mCatatan").innerHTML = "";
+    for (const teks of [r.masalah, r.alasan + luring]) {
+      if (!teks) continue;
+      const p = document.createElement("p"); p.textContent = teks; $("mCatatan").append(p);
+    }
+    const cocok = Object.entries(info.template || {}).find(([, t]) => t.gaya === r.gaya && (t.warna || "") === (r.warna || ""));
+    pilihKartu(cocok ? cocok[0] : null);
+    document.querySelector('.tab button[data-hal="ai"]').click();
+    desk(); nanti(0); status(`Magic selesai (${r.model}). Semua bisa kamu ubah lagi.`);
+  } catch (e) { status(e.message, true); }
+  kunci("magic", bergabung);
+}
+$("tMagic").onclick = $("mMagic").onclick = magic;
+
+async function simpan() {
+  kunci("export", true); status("Export: memulai…");
+  try {
+    const auto = musikOtomatis();  // file musik pilihan pengguna menang atas "auto"
+    const r = await tunggu((await (aktifEdit() ? api("/render_proyek", { proyek: { ...proyekEdit(), musik: file.musik || auto } })
+      : api("/render", { ...opsi(), musik: file.musik || auto }))).id);
+    const v = document.createElement(r.p.endsWith(".jpg") ? "img" : "video"); v.controls = v.autoplay = true;
+    v.src = "/file?p=" + encodeURIComponent(r.p); tampil(v);
+    const tombol = `<button onclick="fetch('/buka?p=${encodeURIComponent(r.p)}')">Buka folder</button>`;
+    const proyek = r.proyek ? `<br><small style="color:var(--redup)">Proyek: ${r.proyek} (bisa dibuka/diedit lagi)</small>` : "";
+    $("hasil").innerHTML = `<h3 style="margin-top:14px">Hasil</h3><small style="color:var(--redup)">${r.p}</small>${proyek}<br>${tombol}`;
+    $("mHasil").innerHTML = `<small style="color:var(--redup)">${r.p}</small>${proyek}<br>${tombol}`;
+    tambahCaption($("hasil"), r.p); tambahCaption($("mHasil"), r.p);
+    status("Export selesai: " + r.p);
+  } catch (e) { status(e.message, true); }
+  kunci("export", bergabung);
+}
+$("tExport").onclick = $("mSimpan").onclick = simpan;
+
+// ---------- Edit Otomatis ----------
+const aktifEdit = () => !!(edit && editPakai);
+const bulat = x => Math.round(x * 10) / 10;
+
+// proyek untuk /render_proyek: rencana dasar + kontrol saat ini (versi terpilih yang mungkin sudah disetel) + teks hasil edit
+function proyekEdit() {
+  const o = opsi();
+  const elemen = edit.dasar.elemen.filter(e => (e.teks || "").trim())
+    .map(e => ({ jenis: e.jenis, teks: e.teks.trim(), mulai: e.mulai, selesai: e.selesai }));
+  return { ...edit.dasar, elemen, gaya: o.gaya, warna: o.warna, judul: o.judul, atur: o.atur, hook: o.hook,
+    rasio: o.rasio, musik: file.musik || null };
+}
+
+function labelSimpan() {
+  if (!$("mModeSimpan")) return;
+  const v = edit && edit.versi[versiPilih];
+  $("mModeSimpan").textContent = aktifEdit() ? `Menyimpan: Edit Otomatis – versi ${v ? v.nama : ""}`
+    : (templatTerpilih ? `Menyimpan: gaya ${templatTerpilih}` : "");
+  const a = $("aiEdit");
+  a.style.display = edit ? "" : "none";
+  if (edit) a.textContent = `Edit Otomatis: ${edit.ringkasan || ""} ` + (aktifEdit()
+    ? "Export memakai edit ini, dengan gaya, warna, dan pengaturan dari tab-tab di sini."
+    : "Sekarang kamu memakai template manual, jadi Export tidak memakai edit ini.");
+}
+
+function segarEo() {
+  const ada = !!(file.video && klip.length && !klip[0].foto);
+  $("eoKartu").style.display = ada ? "" : "none";
+  $("eoAtau").style.display = ada ? "" : "none";
+  const foto = !!(klip.length && klip[0].foto);
+  $("bEditor").disabled = foto; $("bEditor").title = foto ? "Full Edit untuk video" : "Buka editor lengkap";
+}
+
+function hapusEdit() {
+  nomorEdit++; nomorVersi++; sedangEdit = false; edit = null; editPakai = false; versiUntuk = "";
+  $("eoHasil").style.display = "none"; $("eoProgres").style.display = "none"; $("eoGalat").style.display = "none";
+  $("eoVersi").innerHTML = ""; $("eoDaftar").innerHTML = "";
+  labelSimpan();
+}
+
+function tandaiVersi() {
+  document.querySelectorAll(".vkartu").forEach((k, i) => k.classList.toggle("aktif", editPakai && i === versiPilih));
+}
+
+function pilihVersi(i) {
+  const v = edit.versi[i]; if (!v) return;
+  versiPilih = i; editPakai = true; tandaiVersi();
+  $("gaya").value = v.gaya; $("warna").value = v.warna || ""; $("judul").value = v.judul || "";
+  terapkan(v.atur || {}); desk(); pilihKartu(null); nanti(0);
+  status(`Versi ${v.nama} dipilih`);
+}
+
+function statEdit() {
+  const d = edit.dasar;
+  $("eoStat").textContent = `${bulat(edit.durasi_asli)} s → ${bulat(edit.durasi_hasil)} s, ${(d.potongan || []).length} potongan, ${d.elemen.length} teks`;
+}
+
+function barisElemen(e) {
+  const b = document.createElement("div"); b.className = "eoBaris";
+  const jenis = document.createElement("select");
+  jenis.innerHTML = Object.entries(JENIS_ELEMEN).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+  jenis.value = JENIS_ELEMEN[e.jenis] ? e.jenis : "label"; e.jenis = jenis.value;
+  jenis.onchange = () => e.jenis = jenis.value;
+  const teks = document.createElement("input"); teks.type = "text"; teks.value = e.teks || ""; teks.placeholder = "Tulisan di video";
+  teks.oninput = () => e.teks = teks.value;
+  const hapus = document.createElement("button"); hapus.textContent = "✕"; hapus.title = "Hapus teks ini";
+  hapus.onclick = () => { edit.dasar.elemen.splice(edit.dasar.elemen.indexOf(e), 1); b.remove(); statEdit(); };
+  const w = document.createElement("div"); w.className = "waktuEo";
+  w.append("muncul detik");
+  for (const [kunciW, ket] of [["mulai", ""], ["selesai", "sampai"]]) {
+    const n = document.createElement("input"); n.type = "number"; n.step = "0.1"; n.min = "0"; n.value = e[kunciW];
+    n.oninput = () => { if (n.value !== "" && !isNaN(+n.value)) e[kunciW] = +n.value; };
+    if (ket) w.append(ket); w.append(n);
+  }
+  b.append(jenis, teks, hapus, w);
+  return b;
+}
+
+function tampilEdit() {
+  $("eoRingkas").textContent = edit.ringkasan || "";
+  $("eoVersi").innerHTML = "";
+  edit.versi.forEach((v, i) => {
+    const k = document.createElement("button");
+    k.className = "vkartu menunggu"; k.title = v.alasan || "";
+    k.innerHTML = `<div class="gambar"><img alt=""></div><div class="nama"></div><small></small>`;
+    k.querySelector(".nama").textContent = v.nama; k.querySelector("small").textContent = v.alasan || "";
+    k.onclick = () => pilihVersi(i);
+    $("eoVersi").append(k);
+  });
+  $("eoHook").value = edit.dasar.hook || "";
+  $("eoSubtitle").checked = !!edit.dasar.subtitle;
+  $("eoDaftar").innerHTML = "";
+  edit.dasar.elemen.forEach(e => $("eoDaftar").append(barisElemen(e)));
+  statEdit(); $("eoHasil").style.display = "";
+}
+
+// thumbnail tiap versi lewat /pratinjau, satu per satu (server menghapus pratinjau lama di tiap permintaan,
+// jadi gambar langsung diambil sebagai blob sebelum permintaan berikutnya)
+async function muatVersi(paksa) {
+  if (!edit || mode !== "mudah" || !file.video || bergabung || panelAktif()) return;
+  const kunciV = idEdit + "|" + $("rasio").value;
+  if (!paksa && kunciV === versiUntuk) return;
+  const n = ++nomorVersi; versiUntuk = kunciV;
+  const e = edit, video = file.video, audio = file.audio, rasio = $("rasio").value;
+  const pot = e.dasar.potongan || [], p = pot[1] || pot[0];
+  const t = p ? (p.mulai + p.selesai) / 2 : 1;
+  const kartu = [...document.querySelectorAll(".vkartu")];
+  kartu.forEach(k => k.classList.add("menunggu"));
+  for (const [i, k] of kartu.entries()) {
+    if (n !== nomorVersi) return;
+    const v = e.versi[i];
+    try {
+      const j = await api("/pratinjau", { video, audio, musik: null, gaya: v.gaya, warna: v.warna, judul: v.judul,
+        hook: e.dasar.hook || "", rasio, tanpa_potong: false, atur: v.atur || {}, t,
+        bingkai: e.dasar.bingkai || "isi" });
+      const blob = await (await fetch("/file?p=" + encodeURIComponent(j.p))).blob();
+      if (n !== nomorVersi) return;
+      const img = k.querySelector("img"); if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+      img.src = img.dataset.url = URL.createObjectURL(blob);
+    } catch (err) { if (n === nomorVersi) status(err.message, true); }
+    if (n === nomorVersi) k.classList.remove("menunggu");
+  }
+}
+
+async function editOtomatis() {
+  if (!file.video || bergabung || sedangEdit) return;
+  const n = ++nomorEdit; sedangEdit = true;
+  kunci("magic", true); kunci("export", true); kunciKartu(true);
+  $("eoGalat").style.display = "none"; $("eoProgres").style.display = ""; $("eoLog").textContent = "Memulai…";
+  const catat = baris => { if (n === nomorEdit) { $("eoLog").textContent = baris; status(baris); } };
+  try {
+    catat("Memulai Edit Otomatis…");
+    const r = await tunggu((await api("/sutradara", { video: file.video, audio: file.audio, rasio: $("rasio").value })).id, catat);
+    if (n !== nomorEdit) return;  // media berubah selagi menunggu
+    edit = { ...r, dasar: JSON.parse(JSON.stringify(r.dasar)) };
+    edit.dasar.elemen = edit.dasar.elemen || [];
+    idEdit++; versiUntuk = ""; versiPilih = 0;
+    $("hook").value = $("mHook").value = edit.dasar.hook || "";
+    tampilEdit(); pilihVersi(0);
+    status(`Edit Otomatis selesai (${r.model}). Pilih versi yang cocok, lalu Simpan hasil.`);
+    muatVersi(true);
+  } catch (err) {
+    if (n !== nomorEdit) return;
+    $("eoGalatTeks").textContent = err.message;
+    $("eoSetelan").style.display = /internet|online|kunci api/i.test(err.message) ? "" : "none";
+    $("eoGalat").style.display = ""; status(err.message, true);
+  }
+  if (n === nomorEdit) {
+    sedangEdit = false; $("eoProgres").style.display = "none";
+    kunci("magic", bergabung); kunci("export", bergabung); kunciKartu(bergabung);
+  }
+}
+$("eoMulai").onclick = editOtomatis;
+$("eoSetelan").onclick = () => $("tSetelan").click();
+$("eoSubtitle").onchange = () => { if (edit) edit.dasar.subtitle = $("eoSubtitle").checked; };
+$("eoTambah").onclick = () => {
+  if (!edit) return;
+  const e = { jenis: "label", teks: "", mulai: 1, selesai: 3 };
+  edit.dasar.elemen.push(e); $("eoDaftar").append(barisElemen(e)); statEdit();
+};
+
+// Setelan: internet (Gemini) dan kunci API; kunci tidak pernah dibaca balik
+function setelanTampil(s) {
+  $("sOnline").checked = s.online;
+  $("sKunci").placeholder = s.ada_kunci ? "sudah tersimpan" : "belum ada";
+}
+$("tSetelan").onclick = async () => {
+  $("sInfo").textContent = ""; $("sKunci").value = ""; $("setelan").style.display = "flex";
+  try { setelanTampil(await api("/setelan")); } catch (e) { $("sInfo").textContent = e.message; }
+};
+$("sTutup").onclick = () => $("setelan").style.display = "none";
+$("setelan").addEventListener("click", e => { if (e.target === $("setelan")) $("setelan").style.display = "none"; });
+$("sOnline").onchange = async () => {
+  try { setelanTampil(await api("/setelan", { online: $("sOnline").checked })); $("sInfo").textContent = "Tersimpan"; }
+  catch (e) { $("sInfo").textContent = e.message; }
+};
+$("sSimpan").onclick = async () => {
+  const kunci = $("sKunci").value.trim();
+  if (!kunci) { $("sInfo").textContent = "Isi dulu kuncinya"; return; }
+  try { setelanTampil(await api("/setelan", { kunci })); $("sKunci").value = ""; $("sInfo").textContent = "Tersimpan"; }
+  catch (e) { $("sInfo").textContent = e.message; }
+};
+
+// ---------- Poster Film ----------
+let posterAktif = false, nomorPoster = 0, timerPoster = null, sedangPoster = false, tarik = null;
+const poster = { rasio: "2:3", tema: "kertas" };
+const adaVideo = () => !!(klip.length && !klip[0].foto);
+
+function dataPoster() {
+  const a = $("pJamMulai").value, b = $("pJamSelesai").value, t = id => $(id).value.trim();
+  return { judul: t("pJudul"), tahun: t("pTahun"), jam: a && b ? `${a} - ${b}` : (a || b),
+    running_time: t("pRunning"), sutradara: t("pSutradara"), produser: t("pProduser"), pemain: t("pPemain") };
+}
+
+function badanPoster(pratinjau) {
+  const b = { media: file.video, data: dataPoster(), rasio: poster.rasio, tema: poster.tema,
+    warna: $("pWarna").value || "serasi" };
+  if (pratinjau) b.pratinjau = true;
+  if (adaVideo()) { b.mulai = +$("pMulai").value; b.durasi = +$("pDurasi").value; }
+  if ($("pManual").checked) b.crop = { x: +$("pX").value, y: +$("pY").value, zoom: +$("pZoom").value };
+  return b;
+}
+
+function labelPoster() {
+  document.querySelectorAll("[data-pr]").forEach(b => b.classList.toggle("aktif", b.dataset.pr === poster.rasio));
+  document.querySelectorAll("[data-tm]").forEach(b => b.classList.toggle("aktif", b.dataset.tm === poster.tema));
+  $("pMulaiL").textContent = menit(+$("pMulai").value);
+  $("pDurasiL").textContent = `${$("pDurasi").value} dtk`;
+  $("pXL").textContent = Math.round($("pX").value * 100) + "%";
+  $("pYL").textContent = Math.round($("pY").value * 100) + "%";
+  $("pZoomL").textContent = (+$("pZoom").value).toFixed(2) + "x";
+  $("pCropBox").style.display = $("pManual").checked ? "" : "none";
+  $("layar").style.cursor = posterAktif && $("pManual").checked ? "grab" : "";
+}
+
+// panel dibuka / media berubah: sesuaikan form dengan foto atau video
+function siapPoster() {
+  const v = adaVideo(); $("pHasil").innerHTML = "";
+  $("pCuplikan").style.display = v ? "" : "none";
+  $("pRunning").placeholder = v ? "otomatis dari panjang video" : "mis. 1 jam 45 menit";
+  if (v) {
+    const kecil = Math.min(2, durasi);
+    $("pMulai").max = Math.max(0, durasi - kecil); $("pMulai").value = 0;
+    $("pDurasi").min = kecil; $("pDurasi").max = Math.max(kecil, Math.min(30, durasi)); $("pDurasi").value = Math.min(10, durasi);
+  }
+  if (!$("pTahun").value) $("pTahun").value = new Date().getFullYear();
+  labelPoster(); nantiPoster(0);
+}
+
+function bukaPoster() {
+  if (!file.video || bergabung) return;
+  posterAktif = true; document.body.classList.add("poster");
+  nomor++; clearTimeout(timer); nomorContoh++; contohUntuk = ""; nomorVersi++; versiUntuk = "";  // preview & thumbnail biasa dihentikan
+  $("alurBiasa").style.display = "none"; $("alurPoster").style.display = "";
+  $("alurPoster").parentElement.scrollTop = 0;
+  siapPoster();
+}
+
+function keluarPoster() {
+  posterAktif = false; document.body.classList.remove("poster");
+  clearTimeout(timerPoster); nomorPoster++; $("memuat").style.display = "none";
+  $("alurPoster").style.display = "none"; $("alurBiasa").style.display = "";
+  labelPoster(); nanti(0); muatContoh(true); muatVersi(true);
+}
+
+function nantiPoster(jeda = 500) {
+  if (!posterAktif || !file.video || bergabung) return;
+  clearTimeout(timerPoster); timerPoster = setTimeout(pratinjauPoster, jeda);
+}
+
+async function pratinjauPoster() {
+  const n = ++nomorPoster; $("memuat").style.display = "block";
+  try {
+    const j = await api("/poster", badanPoster(true));
+    if (n !== nomorPoster || !posterAktif) return;
+    const img = new Image(); img.draggable = false;
+    img.onload = () => { if (n === nomorPoster && posterAktif) tampil(img); };
+    img.src = `/file?p=${encodeURIComponent(j.p)}&v=${++versiGambar}`;
+  } catch (e) { if (n === nomorPoster) status(e.message, true); }
+  finally { if (n === nomorPoster) $("memuat").style.display = "none"; }
+}
+
+async function simpanPoster() {
+  if (!file.video || sedangPoster) return;
+  sedangPoster = true; clearTimeout(timerPoster); nomorPoster++; $("memuat").style.display = "none";
+  kunci("export", true); status("Poster: memulai…");
+  try {
+    const r = await tunggu((await api("/poster", badanPoster(false))).id);
+    const v = document.createElement(r.p.endsWith(".mp4") ? "video" : "img"); v.controls = v.autoplay = true; v.loop = true;
+    v.src = "/file?p=" + encodeURIComponent(r.p); tampil(v);
+    $("pHasil").innerHTML = `<small style="color:var(--redup)">${r.p}</small><br>` +
+      `<button onclick="fetch('/buka?p=${encodeURIComponent(r.p)}')">Buka folder</button>`;
+    if (r.p.endsWith(".mp4")) tambahCaption($("pHasil"), r.p);
+    status("Poster selesai: " + r.p);
+  } catch (e) { status(e.message, true); }
+  sedangPoster = false; kunci("export", bergabung);
+}
+
+$("pstBuka").onclick = bukaPoster;
+$("pKembali").onclick = keluarPoster;
+$("pSimpan").onclick = simpanPoster;
+document.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { poster.rasio = b.dataset.pr; labelPoster(); nantiPoster(0); });
+document.querySelectorAll("[data-tm]").forEach(b => b.onclick = () => { poster.tema = b.dataset.tm; labelPoster(); nantiPoster(0); });
+["input", "change"].forEach(ev => $("alurPoster").addEventListener(ev, e => {
+  if (e.target.id === "pMulai" || e.target.id === "pDurasi") {  // klip tidak boleh melewati akhir video
+    const sisa = durasi - +$("pMulai").value;
+    if (+$("pDurasi").value > sisa) $("pDurasi").value = Math.max(+$("pDurasi").min, sisa);
+  }
+  labelPoster(); nantiPoster();
+}));
+$("pOtomatis").onclick = () => {
+  $("pManual").checked = false; $("pX").value = $("pY").value = 0.5; $("pZoom").value = 1;
+  labelPoster(); nantiPoster(0);
+};
+
+// geser gambar langsung di layar tengah (hanya kalau "Atur posisi sendiri" menyala)
+$("layar").addEventListener("pointerdown", e => {
+  if (!(posterAktif && $("pManual").checked && e.target.tagName === "IMG")) return;
+  const r = e.target.getBoundingClientRect();
+  tarik = { x: e.clientX, y: e.clientY, px: +$("pX").value, py: +$("pY").value, w: r.width, h: r.height };
+  $("layar").setPointerCapture(e.pointerId); e.preventDefault();
+});
+$("layar").addEventListener("pointermove", e => {
+  if (!tarik) return;
+  const batas = v => Math.max(0, Math.min(1, v));
+  $("pX").value = batas(tarik.px - (e.clientX - tarik.x) / tarik.w);
+  $("pY").value = batas(tarik.py - (e.clientY - tarik.y) / tarik.h);
+  labelPoster(); nantiPoster(250);
+});
+["pointerup", "pointercancel"].forEach(n => $("layar").addEventListener(n, () => { tarik = null; }));
+
+// ---------- Desain ----------
+let desainAktif = false, nomorDesain = 0, timerDesain = null, sedangDesain = false, tarikD = null;
+let koranIsi = null, dMedia = [], dMuatan = 0;  // koranIsi: 4 potongan koran; dMedia: media carousel [{p, nama, ket, cat}]
+const desain = { gaya: "koran", rasio: null };  // rasio null = bawaan gaya
+const DESAIN_RASIO = { koran: "16:9", tiket: "9:16", polaroid: "4:5", majalah: "4:5" };
+const DESAIN_DESK = { koran: "Halaman depan koran dengan fotomu sebagai berita utama.",
+  tiket: "Tiket kenangan dengan tanggal, tempat, dan kursi.", polaroid: "Foto polaroid dengan tulisan tangan.",
+  majalah: "Sampul majalah dengan judul dan kutipan.",
+  carousel: "Beberapa foto atau video jadi slide yang menyambung saat digeser. Tidak ada pratinjau; tekan Simpan desain." };
+let infoDesain = null;  // dari GET /desain_info: gaya koleksi dengan isian dinamis
+const rasioDesain = () => desain.rasio || DESAIN_RASIO[desain.gaya];
+const bagianDesain = () => document.querySelector(`#alurDesain .dg[data-g="${desain.gaya}"]`);
+const carousel = () => desain.gaya === "carousel";
+
+function dataDesain() {
+  const d = {}, kel = {};
+  bagianDesain().querySelectorAll("[data-k]").forEach(e => {
+    const v = e.dataset.j === "daftar" ? e.value.split(/\r?\n/).map(x => x.trim()).filter(Boolean).join("|") : e.value.trim();  // daftar: satu baris satu butir
+    (kel[e.dataset.k] ||= []).push(v);
+  });
+  for (const [k, v] of Object.entries(kel)) if (v.some(Boolean)) d[k] = v.join("|");  // beberapa kolom satu kunci: digabung "|"
+  if (desain.gaya === "koran" && koranIsi) d.potongan = koranIsi.map(p => ({ judul: p.judul || "", isi: p.isi || "", gambar: p.gambar }));
+  if (carousel()) {
+    if (dMedia.some(m => m.ket.trim())) d.keterangan = dMedia.map(m => m.ket.replace(/\|/g, " ").trim()).join("|");
+    if (dMedia.some(m => m.cat.trim())) d.catatan = dMedia.map(m => m.cat.trim());
+  }
+  return d;
+}
+
+function badanDesain(pratinjau) {
+  const b = { gaya: desain.gaya, data: dataDesain(), warna: $("dWarna").value || "serasi" };
+  if (carousel()) { b.media = dMedia.map(m => m.p); return b; }
+  b.media = file.video; b.rasio = rasioDesain();
+  if (pratinjau) b.pratinjau = true;
+  if (adaVideo()) { b.mulai = +$("dMulai").value; b.durasi = +$("dDurasi").value; }
+  if ($("dManual").checked) b.crop = { x: +$("dX").value, y: +$("dY").value, zoom: +$("dZoom").value };
+  return b;
+}
+
+const bisaDesain = () => carousel() ? dMedia.length > 0 : !!(file.video && !bergabung);
+
+function labelDesain() {
+  const c = carousel();
+  document.querySelectorAll("[data-dg]").forEach(b => b.classList.toggle("aktif", b.dataset.dg === desain.gaya));
+  document.querySelectorAll("[data-dr]").forEach(b => b.classList.toggle("aktif", b.dataset.dr === rasioDesain()));
+  document.querySelectorAll("#alurDesain .dg").forEach(e => e.classList.toggle("aktif", e.dataset.g === desain.gaya));
+  $("dDesk").textContent = DESAIN_DESK[desain.gaya] || "";
+  $("dBentuk").style.display = $("dCrop").style.display = c ? "none" : "";
+  $("dCuplikan").style.display = !c && adaVideo() ? "" : "none";
+  $("dMulaiL").textContent = menit(+$("dMulai").value);
+  $("dDurasiL").textContent = `${$("dDurasi").value} dtk`;
+  $("dXL").textContent = Math.round($("dX").value * 100) + "%";
+  $("dYL").textContent = Math.round($("dY").value * 100) + "%";
+  $("dZoomL").textContent = (+$("dZoom").value).toFixed(2) + "x";
+  $("dCropBox").style.display = $("dManual").checked ? "" : "none";
+  $("layar").style.cursor = desainAktif && !c && $("dManual").checked ? "grab" : "";
+  $("dSimpan").disabled = sedangDesain || !bisaDesain();
+}
+
+function potonganKoran() {
+  const w = $("dPotongan"); w.innerHTML = "";
+  (koranIsi || []).forEach((p, i) => {
+    const b = document.createElement("div"); b.className = "dpot";
+    const j = document.createElement("input"); j.type = "text"; j.value = p.judul || ""; j.placeholder = `Judul potongan ${i + 1}`;
+    j.oninput = () => p.judul = j.value;
+    const t = document.createElement("textarea"); t.rows = 4; t.value = p.isi || ""; t.placeholder = "Isi potongan";
+    t.oninput = () => p.isi = t.value;
+    b.append(j, t); w.append(b);
+  });
+}
+
+async function muatKoranIsi() {
+  if (koranIsi) return;
+  try {
+    koranIsi = (await api("/koran_isi")).potongan.slice(0, 4).map(p => ({ ...p }));
+    potonganKoran(); nantiDesain(0);
+  } catch (e) { status(e.message, true); }
+}
+
+function daftarDesain() {
+  const w = $("dMedia"); w.innerHTML = "";
+  dMedia.forEach((m, i) => {
+    const kotak = document.createElement("div"); kotak.className = "dmedia";
+    const baris = document.createElement("div"); baris.className = "klip";
+    const nama = document.createElement("span"); nama.textContent = `${i + 1}. ${m.nama}`; nama.title = m.nama;
+    baris.append(nama);
+    for (const [teks, aksi, mati] of [["↑", () => geserDesain(i, -1), i === 0], ["↓", () => geserDesain(i, 1), i === dMedia.length - 1],
+                                      ["✕", () => { dMedia.splice(i, 1); daftarDesain(); }, false]]) {
+      const b = document.createElement("button"); b.textContent = teks; b.disabled = mati; b.onclick = aksi; baris.append(b);
+    }
+    const ket = document.createElement("input"); ket.type = "text"; ket.value = m.ket; ket.placeholder = "Tulisan di bawah foto";
+    ket.oninput = () => m.ket = ket.value;
+    const cat = document.createElement("input"); cat.type = "text"; cat.value = m.cat; cat.placeholder = "Catatan tempel (opsional)";
+    cat.oninput = () => m.cat = cat.value;
+    kotak.append(baris, ket, cat); w.append(kotak);
+  });
+  labelDesain();
+}
+
+function geserDesain(i, arah) { [dMedia[i], dMedia[i + arah]] = [dMedia[i + arah], dMedia[i]]; daftarDesain(); }
+
+async function muatMediaDesain(daftar) {
+  const n = ++dMuatan; let ok = 0;
+  try {
+    for (const [i, f] of daftar.entries()) {
+      $("dMuat").textContent = `memuat ${f.name} (${i + 1}/${daftar.length})…`;
+      const j = await unggah(f, "desain");
+      dMedia.push({ p: j.p, nama: f.name, ket: "", cat: "" }); ok++; daftarDesain();
+    }
+    if (n === dMuatan) $("dMuat").textContent = "";
+  } catch (e) { $("dMuat").textContent = ""; status(e.message, true); }
+}
+$("dFile").addEventListener("change", () => { const d = [...$("dFile").files]; $("dFile").value = ""; if (d.length) muatMediaDesain(d); });
+$("dZona").addEventListener("dragover", () => $("dZona").classList.add("tarik"));
+$("dZona").addEventListener("dragleave", () => $("dZona").classList.remove("tarik"));
+$("dZona").addEventListener("drop", e => {
+  $("dZona").classList.remove("tarik");
+  const d = [...e.dataTransfer.files].filter(f => /^(video|image)\//.test(f.type));
+  if (d.length) muatMediaDesain(d);
+});
+
+// panel dibuka / media berubah: sesuaikan form dengan foto atau video
+function siapDesain() {
+  $("dHasil").innerHTML = "";
+  if (file.video && adaVideo()) {
+    const kecil = Math.min(2, durasi);
+    $("dMulai").max = Math.max(0, durasi - kecil); $("dMulai").value = 0;
+    $("dDurasi").min = kecil; $("dDurasi").max = Math.max(kecil, Math.min(30, durasi)); $("dDurasi").value = Math.min(10, durasi);
+  }
+  labelDesain(); nantiDesain(0);
+}
+
+function bangunKoleksi() {
+  const w = $("dKoleksi"), f = $("dDinamis");
+  for (const g of infoDesain) {
+    DESAIN_RASIO[g.gaya] = g.rasio;
+    const b = document.createElement("button"); b.className = "dpil"; b.dataset.dg = g.gaya; b.textContent = g.nama; b.title = g.nama;
+    b.onclick = () => pilihGaya(g.gaya); w.append(b);
+    const d = document.createElement("div"); d.className = "dg"; d.dataset.g = g.gaya;
+    for (const i of g.isian) {
+      const l = document.createElement("label"); l.textContent = i.label;
+      const e = document.createElement(i.jenis === "teks" ? "input" : "textarea");
+      if (e.tagName === "INPUT") e.type = "text"; else e.rows = i.jenis === "daftar" ? 5 : 3;
+      e.dataset.k = i.kunci; e.dataset.j = i.jenis; e.placeholder = i.contoh || "";
+      if (i.jenis === "daftar") e.title = "Satu baris satu butir";
+      d.append(l, e);
+    }
+    f.append(d);
+  }
+  $("dKoleksiJudul").style.display = $("dKoleksi").style.display = "";
+}
+
+async function muatInfoDesain() {
+  if (infoDesain) return;
+  try { infoDesain = await api("/desain_info"); bangunKoleksi(); labelDesain(); }
+  catch (e) { infoDesain = null; status(e.message, true); }
+}
+
+function bukaDesain() {
+  desainAktif = true; document.body.classList.add("poster");  // sembunyikan penggeser waktu, sama seperti Poster
+  nomor++; clearTimeout(timer); nomorContoh++; contohUntuk = ""; nomorVersi++; versiUntuk = "";
+  if (!$("dWarna").options.length) {
+    $("dWarna").innerHTML = $("pWarna").innerHTML;
+    $("dWarna").options[0].textContent = "Serasi dengan desain (otomatis)"; $("dWarna").value = "serasi";
+  }
+  $("alurBiasa").style.display = "none"; $("alurDesain").style.display = "";
+  $("alurDesain").parentElement.scrollTop = 0;
+  muatKoranIsi(); muatInfoDesain(); siapDesain();
+}
+
+function keluarDesain() {
+  desainAktif = false; document.body.classList.remove("poster");
+  clearTimeout(timerDesain); nomorDesain++; $("memuat").style.display = "none";
+  $("layar").querySelectorAll(".dslide").forEach(e => e.remove());
+  $("alurDesain").style.display = "none"; $("alurBiasa").style.display = "";
+  labelDesain(); nanti(0); muatContoh(true); muatVersi(true);
+}
+
+function nantiDesain(jeda = 500) {
+  if (carousel()) { clearTimeout(timerDesain); nomorDesain++; $("memuat").style.display = "none"; return; }  // carousel tanpa pratinjau
+  if (!desainAktif || !file.video || bergabung) return;
+  clearTimeout(timerDesain); timerDesain = setTimeout(pratinjauDesain, jeda);
+}
+
+const tampilDesain = el => { $("layar").querySelectorAll(".dslide").forEach(e => e.remove()); tampil(el); };
+
+async function pratinjauDesain() {
+  const n = ++nomorDesain; $("memuat").style.display = "block";
+  try {
+    const j = await api("/desain", badanDesain(true));
+    if (n !== nomorDesain || !desainAktif) return;
+    const img = new Image(); img.draggable = false;
+    img.onload = () => { if (n === nomorDesain && desainAktif) tampilDesain(img); };
+    img.src = `/file?p=${encodeURIComponent(j.p)}&v=${++versiGambar}`;
+  } catch (e) { if (n === nomorDesain) status(e.message, true); }
+  finally { if (n === nomorDesain) $("memuat").style.display = "none"; }
+}
+
+function slideDesain(daftar) {
+  const baris = document.createElement("div"); baris.className = "dslide";
+  for (const p of daftar) {
+    const f = document.createElement("figure");
+    const v = document.createElement(p.endsWith(".mp4") ? "video" : "img");
+    if (v.tagName === "VIDEO") { v.controls = v.autoplay = v.loop = v.muted = true; }
+    v.src = "/file?p=" + encodeURIComponent(p);
+    const a = document.createElement("a"); a.href = v.src; a.download = p; a.textContent = "Unduh " + p;
+    f.append(v, a); baris.append(f);
+  }
+  return baris;
+}
+
+async function simpanDesain() {
+  if (!bisaDesain() || sedangDesain) return;
+  sedangDesain = true; clearTimeout(timerDesain); nomorDesain++; $("memuat").style.display = "none";
+  labelDesain(); kunci("export", true); status("Desain: memulai…");
+  try {
+    const r = await tunggu((await api("/desain", badanDesain(false))).id);
+    const hasil = Array.isArray(r.p) ? r.p : [r.p];
+    if (Array.isArray(r.p)) tampilDesain(slideDesain(hasil));
+    else {
+      const v = document.createElement(r.p.endsWith(".mp4") ? "video" : "img"); v.controls = v.autoplay = true; v.loop = true;
+      v.src = "/file?p=" + encodeURIComponent(r.p); tampilDesain(v);
+    }
+    $("dHasil").innerHTML = hasil.map(p => `<small style="color:var(--redup)">${p}</small>`).join("<br>") + "<br>";
+    const buka = document.createElement("button"); buka.textContent = "Buka folder";
+    buka.onclick = () => fetch("/buka?p=" + encodeURIComponent(hasil[0])); $("dHasil").append(buka);
+    if (!Array.isArray(r.p) && r.p.endsWith(".mp4")) tambahCaption($("dHasil"), r.p);
+    status(Array.isArray(r.p) ? `Carousel selesai: ${hasil.length} slide` : "Desain selesai: " + r.p);
+  } catch (e) { status(e.message, true); }
+  sedangDesain = false; kunci("export", bergabung); labelDesain();
+}
+
+$("dsBuka").onclick = bukaDesain;
+$("dKembali").onclick = keluarDesain;
+$("dSimpan").onclick = simpanDesain;
+function pilihGaya(g) {
+  desain.gaya = g; desain.rasio = null;
+  $("layar").querySelectorAll(".dslide").forEach(e => e.remove());
+  labelDesain(); nantiDesain(0);
+}
+document.querySelectorAll("[data-dg]").forEach(b => b.onclick = () => pilihGaya(b.dataset.dg));
+document.querySelectorAll("[data-dr]").forEach(b => b.onclick = () => { desain.rasio = b.dataset.dr; labelDesain(); nantiDesain(0); });
+["input", "change"].forEach(ev => $("alurDesain").addEventListener(ev, e => {
+  if (e.target.id === "dMulai" || e.target.id === "dDurasi") {  // klip tidak boleh melewati akhir video
+    const sisa = durasi - +$("dMulai").value;
+    if (+$("dDurasi").value > sisa) $("dDurasi").value = Math.max(+$("dDurasi").min, sisa);
+  }
+  labelDesain(); nantiDesain();
+}));
+$("dOtomatis").onclick = () => {
+  $("dManual").checked = false; $("dX").value = $("dY").value = 0.5; $("dZoom").value = 1;
+  labelDesain(); nantiDesain(0);
+};
+$("dSimpanIsi").onclick = async () => {
+  if (!koranIsi) return;
+  try {
+    await api("/koran_isi", { potongan: koranIsi });
+    $("dIsiInfo").textContent = "Tersimpan sebagai isi bawaan.";
+  } catch (e) { $("dIsiInfo").textContent = e.message; }
+};
+
+// geser gambar langsung di layar tengah (hanya kalau "Atur posisi sendiri" menyala)
+$("layar").addEventListener("pointerdown", e => {
+  if (!(desainAktif && !carousel() && $("dManual").checked && e.target.tagName === "IMG")) return;
+  const r = e.target.getBoundingClientRect();
+  tarikD = { x: e.clientX, y: e.clientY, px: +$("dX").value, py: +$("dY").value, w: r.width, h: r.height };
+  $("layar").setPointerCapture(e.pointerId); e.preventDefault();
+});
+$("layar").addEventListener("pointermove", e => {
+  if (!tarikD) return;
+  const batas = v => Math.max(0, Math.min(1, v));
+  $("dX").value = batas(tarikD.px - (e.clientX - tarikD.x) / tarikD.w);
+  $("dY").value = batas(tarikD.py - (e.clientY - tarikD.y) / tarikD.h);
+  labelDesain(); nantiDesain(250);
+});
+["pointerup", "pointercancel"].forEach(n => $("layar").addEventListener(n, () => { tarikD = null; }));
+
+// ---------- Musik otomatis ----------
+const musikOtomatis = () => $("musikAuto").checked && !(klip.length && klip[0].foto) ? "auto" : null;
+function segarMusik() {
+  $("musikAuto").disabled = !!file.musik;
+  $("musikAutoTeks").textContent = file.musik ? "Musik latar otomatis (tidak dipakai: kamu sudah memilih musik sendiri)" : "Musik latar otomatis";
+}
+
+// ---------- Safe zone IG ----------
+let safeAktif = false;
+try { safeAktif = localStorage.getItem("safeIG") === "1"; } catch (e) {}
+$("safeCek").checked = safeAktif;
+function segarSafe() {
+  const s = $("safe"), l = $("layar"); s.style.display = "none";
+  const m = [...l.children].find(e => e.tagName === "IMG" || e.tagName === "VIDEO");
+  if (!safeAktif || !m) return;
+  const nw = m.naturalWidth || m.videoWidth, nh = m.naturalHeight || m.videoHeight;
+  if (!nw || !nh) return;
+  const r = nw / nh, jenis = Math.abs(r - 9 / 16) < 0.03 ? "r916" : Math.abs(r - 4 / 5) < 0.03 ? "r45" : "";
+  if (!jenis) return;
+  const lr = l.getBoundingClientRect(), mr = m.getBoundingClientRect();  // gambar bisa letterbox di dalam kotak elemen
+  const k = Math.min(mr.width / nw, mr.height / nh), w = nw * k, h = nh * k;
+  s.className = jenis;
+  s.style.left = (mr.left - lr.left + (mr.width - w) / 2) + "px"; s.style.top = (mr.top - lr.top + (mr.height - h) / 2) + "px";
+  s.style.width = w + "px"; s.style.height = h + "px"; s.style.display = "block";
+}
+$("safeCek").onchange = () => {
+  safeAktif = $("safeCek").checked;
+  try { localStorage.setItem("safeIG", safeAktif ? "1" : "0"); } catch (e) {}
+  segarSafe();
+};
+new MutationObserver(() => {
+  segarSafe();
+  [...$("layar").children].forEach(e => { if (e.tagName === "VIDEO" && !e.dataset.safe) { e.dataset.safe = 1; e.addEventListener("loadedmetadata", segarSafe); } });
+}).observe($("layar"), { childList: true });
+new ResizeObserver(segarSafe).observe($("layar"));
+
+// ---------- Caption & cover ----------
+const CAP_NAMA = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube Shorts", x: "X", linkedin: "LinkedIn" };
+let capVideo = null, capData = null, capTab = "instagram", capNomor = 0;
+
+function tambahCaption(wadah, p) {
+  const b = document.createElement("button"); b.textContent = "Buat caption"; b.style.marginLeft = "6px";
+  b.onclick = () => bukaCaption(p);
+  wadah.append(b);
+}
+
+function bukaCaption(video) {
+  capVideo = video; capData = null; capNomor++;
+  $("capMinta").style.display = ""; $("capIsi").style.display = "none"; $("capStatus").textContent = "";
+  $("capBuat").disabled = false; $("capBuat").textContent = "Buat caption";
+  $("capDlg").style.display = "flex";
+}
+
+function lihatCaption(data) {  // data sudah ada (hasil batch): tanpa permintaan baru
+  capVideo = null; capData = data; capNomor++;
+  $("capMinta").style.display = "none"; $("capStatus").textContent = "";
+  $("capDlg").style.display = "flex"; tampilCaptionIsi();
+}
+
+function tampilCaptionIsi() {
+  const d = capData, siap = d.siap || {};
+  $("capIsi").style.display = "";
+  $("capModel").style.display = d.model === "offline" ? "" : "none";
+  const ada = Object.keys(CAP_NAMA).filter(k => siap[k] != null);
+  if (!ada.includes(capTab)) capTab = ada[0];
+  $("capTab").innerHTML = "";
+  ada.forEach(k => {
+    const b = document.createElement("button"); b.textContent = CAP_NAMA[k]; b.dataset.k = k;
+    b.onclick = () => { capTab = k; segarTab(); }; $("capTab").append(b);
+  });
+  $("capCover").innerHTML = "";
+  if (d.cover) {
+    const src = "/file?p=" + encodeURIComponent(d.cover);
+    const img = document.createElement("img"); img.src = src; img.alt = "cover";
+    const a = document.createElement("a"); a.href = src; a.download = d.cover; a.textContent = "Unduh cover";
+    const h = document.createElement("div"); h.className = "petunjuk"; h.textContent = "Cover terbaik dari videomu";
+    $("capCover").append(h, img, a);
+  }
+  segarTab();
+}
+
+function segarTab() {
+  const t = (capData.siap || {})[capTab] || "";
+  document.querySelectorAll("#capTab button").forEach(b => b.classList.toggle("aktif", b.dataset.k === capTab));
+  $("capTeks").value = t;
+  const n = [...t].length, h = $("capHitung");
+  h.textContent = capTab === "x" ? `${n}/280 karakter` : `${n} karakter`;
+  h.className = capTab === "x" && n > 280 ? "lebih" : "";
+  $("capSalin").textContent = "Salin";
+}
+
+$("capSalin").onclick = async () => {
+  const t = $("capTeks").value;
+  try { await navigator.clipboard.writeText(t); }
+  catch (e) { $("capTeks").select(); document.execCommand("copy"); }
+  $("capSalin").textContent = "Tersalin ✓";
+};
+$("capBuat").onclick = async () => {
+  if (!capVideo) return;
+  const n = ++capNomor; $("capBuat").disabled = true; $("capIsi").style.display = "none"; $("capStatus").textContent = "Memulai…";
+  try {
+    const r = await tunggu((await api("/caption", { video: capVideo, catatan: $("capCatatan").value.trim() })).id,
+      b => { if (n === capNomor) $("capStatus").textContent = b; });
+    if (n !== capNomor) return;
+    capData = r; $("capStatus").textContent = ""; $("capBuat").textContent = "Buat ulang"; tampilCaptionIsi();
+  } catch (e) { if (n === capNomor) $("capStatus").textContent = e.message; }
+  if (n === capNomor) $("capBuat").disabled = false;
+};
+$("capTutup").onclick = () => { capNomor++; $("capDlg").style.display = "none"; };
+$("capDlg").addEventListener("click", e => { if (e.target === $("capDlg")) $("capTutup").click(); });
+
+// ---------- Montage & Banyak Sekaligus ----------
+let panelBaru = null;  // "montage" | "batch": panel ini menggantikan alur biasa, seperti Poster / Desain
+const PANEL_BARU = { montage: "alurMontage", batch: "alurBatch" };
+
+function bukaPanelBaru(n) {
+  panelBaru = n; document.body.classList.add("poster");
+  nomor++; clearTimeout(timer); nomorContoh++; contohUntuk = ""; nomorVersi++; versiUntuk = "";
+  $("alurBiasa").style.display = "none"; $(PANEL_BARU[n]).style.display = "";
+  $(PANEL_BARU[n]).parentElement.scrollTop = 0;
+}
+
+function keluarPanelBaru() {
+  panelBaru = null; document.body.classList.remove("poster"); $("memuat").style.display = "none";
+  Object.values(PANEL_BARU).forEach(id => $(id).style.display = "none"); $("alurBiasa").style.display = "";
+  nanti(0); muatContoh(true); muatVersi(true);
+}
+
+// daftar media bebas urutan (unggah, ↑ ↓ ✕), cara yang sama dengan carousel Desain
+function buatPicker(idFile, idZona, idMuat, idDaftar, ubah) {
+  const daftar = []; let muatan = 0;
+  const gambar = () => {
+    const w = $(idDaftar); w.innerHTML = "";
+    daftar.forEach((m, i) => {
+      const baris = document.createElement("div"); baris.className = "klip";
+      const nama = document.createElement("span"); nama.textContent = `${i + 1}. ${m.nama}`; nama.title = m.nama; baris.append(nama);
+      for (const [teks, aksi, mati] of [["↑", () => { [daftar[i], daftar[i - 1]] = [daftar[i - 1], daftar[i]]; gambar(); }, i === 0],
+          ["↓", () => { [daftar[i], daftar[i + 1]] = [daftar[i + 1], daftar[i]]; gambar(); }, i === daftar.length - 1],
+          ["✕", () => { daftar.splice(i, 1); gambar(); }, false]]) {
+        const b = document.createElement("button"); b.textContent = teks; b.disabled = mati; b.onclick = aksi; baris.append(b);
+      }
+      w.append(baris);
+    });
+    ubah();
+  };
+  const tambah = async files => {
+    const n = ++muatan;
+    try {
+      for (const [i, f] of files.entries()) {
+        $(idMuat).textContent = `memuat ${f.name} (${i + 1}/${files.length})…`;
+        const j = await unggah(f, "desain");
+        daftar.push({ p: j.p, nama: f.name }); gambar();
+      }
+      if (n === muatan) $(idMuat).textContent = "";
+    } catch (e) { $(idMuat).textContent = ""; status(e.message, true); }
+  };
+  $(idFile).addEventListener("change", () => { const d = [...$(idFile).files]; $(idFile).value = ""; if (d.length) tambah(d); });
+  $(idZona).addEventListener("dragover", () => $(idZona).classList.add("tarik"));
+  $(idZona).addEventListener("dragleave", () => $(idZona).classList.remove("tarik"));
+  $(idZona).addEventListener("drop", e => {
+    $(idZona).classList.remove("tarik");
+    const d = [...e.dataTransfer.files].filter(f => /^(video|image)\//.test(f.type));
+    if (d.length) tambah(d);
+  });
+  return daftar;
+}
+
+// --- Montage ---
+let moRasio = "9:16", sedangMo = false;
+const labelMo = () => {
+  document.querySelectorAll("[data-mr]").forEach(b => b.classList.toggle("aktif", b.dataset.mr === moRasio));
+  $("moBuat").disabled = sedangMo || !moMedia.length;
+};
+const moMedia = buatPicker("moFile", "moZona", "moMuat", "moDaftar", () => labelMo());
+document.querySelectorAll("[data-mr]").forEach(b => b.onclick = () => { moRasio = b.dataset.mr; labelMo(); });
+$("moBuka").onclick = () => { bukaPanelBaru("montage"); labelMo(); };
+$("moKembali").onclick = keluarPanelBaru;
+
+async function buatMontage() {
+  if (!moMedia.length || sedangMo) return;
+  sedangMo = true; labelMo(); $("moHasil").innerHTML = ""; status("Montage: memulai…");
+  try {
+    const r = await tunggu((await api("/montage", { media: moMedia.map(m => m.p), judul: $("moJudul").value.trim(),
+      warna: $("moWarna").value, rasio: moRasio })).id);
+    const v = document.createElement("video"); v.controls = v.autoplay = v.loop = true;
+    v.src = "/file?p=" + encodeURIComponent(r.p); tampil(v);
+    const nama = document.createElement("small"); nama.style.color = "var(--redup)"; nama.textContent = r.p;
+    const buka = document.createElement("button"); buka.textContent = "Buka folder";
+    buka.onclick = () => fetch("/buka?p=" + encodeURIComponent(r.p));
+    $("moHasil").append(nama, document.createElement("br"), buka); tambahCaption($("moHasil"), r.p);
+    status("Montage selesai: " + r.p);
+  } catch (e) { status(e.message, true); }
+  sedangMo = false; labelMo();
+}
+$("moBuat").onclick = buatMontage;
+
+// --- Banyak sekaligus ---
+let baRasio = "9:16", sedangBa = false;
+const labelBa = () => {
+  document.querySelectorAll("[data-br]").forEach(b => b.classList.toggle("aktif", b.dataset.br === baRasio));
+  $("baMulai").disabled = sedangBa || !baMedia.length;
+};
+const baMedia = buatPicker("baFile", "baZona", "baMuat", "baDaftar", () => labelBa());
+document.querySelectorAll("[data-br]").forEach(b => b.onclick = () => { baRasio = b.dataset.br; labelBa(); });
+$("baBuka").onclick = () => { bukaPanelBaru("batch"); labelBa(); };
+$("baKembali").onclick = keluarPanelBaru;
+
+function itemBatch(h) {
+  const k = document.createElement("div"); k.className = "bItem";
+  const judul = document.createElement("b"); judul.textContent = h.sumber; k.append(judul);
+  if (h.galat) {
+    const g = document.createElement("div"); g.className = "galatTeks"; g.textContent = "Gagal: " + h.galat; k.append(g); return k;
+  }
+  const m = document.createElement(h.p.endsWith(".mp4") ? "video" : "img");
+  if (m.tagName === "VIDEO") { m.controls = true; m.preload = "metadata"; }
+  m.src = "/file?p=" + encodeURIComponent(h.p); k.append(m);
+  const buka = document.createElement("button"); buka.textContent = "Buka folder";
+  buka.onclick = () => fetch("/buka?p=" + encodeURIComponent(h.p)); k.append(buka);
+  if (h.caption) {
+    const c = document.createElement("button"); c.textContent = "Lihat caption"; c.style.marginLeft = "6px";
+    c.onclick = () => lihatCaption({ siap: h.caption, cover: h.cover, model: null }); k.append(c);
+  }
+  return k;
+}
+
+async function editBanyak() {
+  if (!baMedia.length || sedangBa) return;
+  sedangBa = true; labelBa(); $("baHasil").innerHTML = ""; $("baLog").textContent = ""; status("Memulai…");
+  try {
+    const r = await tunggu((await api("/batch", { media: baMedia.map(m => m.p), rasio: baRasio, caption: $("baCaption").checked })).id,
+      (b, log) => { $("baLog").textContent = log.slice(-3).join("\n"); status(b); });
+    const ok = r.hasil.filter(h => !h.galat).length;
+    r.hasil.forEach(h => $("baHasil").append(itemBatch(h)));
+    status(`Selesai: ${ok} dari ${r.hasil.length} berhasil`, ok === 0);
+  } catch (e) { status(e.message, true); }
+  $("baLog").textContent = ""; sedangBa = false; labelBa();
+}
+$("baMulai").onclick = editBanyak;
+
+// ---------- Full Edit ----------
+async function bukaEditor() {
+  if (!file.video) { location.href = "/editor"; return; }
+  if (bergabung) { status("Tunggu sebentar, klip sedang disambung", true); return; }
+  $("bEditor").disabled = true; status("Membuka Full Edit…");
+  try {
+    const o = opsi();
+    const proyek = aktifEdit() ? proyekEdit()
+      : { sumber: [file.video], audio: file.audio || null, musik: file.musik || null, rasio: o.rasio, gaya: o.gaya,
+          warna: o.warna, judul: o.judul, atur: o.atur, hook: o.hook, subtitle: true, potongan: [], elemen: [] };
+    const r = await api("/simpan_proyek", { proyek });
+    location.href = "/editor?proyek=" + encodeURIComponent(r.p);
+  } catch (e) { status(e.message, true); segarEo(); }
+}
+$("bEditor").onclick = bukaEditor;
+mulai();
+</script>
+</body>
+</html>

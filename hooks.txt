@@ -1,0 +1,16 @@
+# Bank hook untuk --hook auto. Satu baris = satu hook. Baris diawali # diabaikan.
+# Tambah/hapus sesukamu. Pendek lebih baik (maks ~8 kata).
+Day 12 of learning this from scratch
+Nobody told me this when I started
+I tried learning this in one week
+One thing I wish I knew earlier
+I was wrong about this
+If I could start over, I'd do this
+This changed how I learn
+Documenting everything I'm learning
+Save this if you're learning too
+Small progress is still progress
+The simplest thing that actually worked
+Why did no one say this sooner?
+What I learned this week
+Learning in public, day by day

@@ -1,0 +1,18 @@
+# data pribadi & hasil
+proyek/
+selera.json
+kuota_habis.json
+musik/
+*.kata.json
+*.rencana.json
+*.proyek.json
+*.mp4
+*.mov
+*.wav
+
+# kunci API & build
+.env
+*.exe
+*.lnk
+_peluncur.cs
+__pycache__/

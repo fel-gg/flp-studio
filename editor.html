@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Full Edit - FLP Studio</title><link rel="icon" href="/ikon.ico">
+<style>
+  :root { --bg: #161616; --panel: #1f1f1f; --panel2: #262626; --garis: #2c2c2c; --teks: #e8e8e8; --redup: #8f8f8f;
+          --aksen: #22c3c3; --galat: #ff6b6b; --kepala: #ff5a5a; --blokteks: #c9822c; --bloksub: #4d6fb8; --bloklagu: #3f8f66; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--teks); font: 13px/1.45 "Segoe UI", system-ui, sans-serif;
+         display: grid; grid-template-rows: 44px minmax(0, 1fr) clamp(230px, 36vh, 300px) 24px; overflow: hidden; }
+  button, select, input, textarea { font: inherit; color: inherit; }
+  button { background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 4px 11px; cursor: pointer; white-space: nowrap; }
+  button:hover:not(:disabled) { border-color: #555; }
+  button:disabled { opacity: .4; cursor: default; }
+  .utama { background: var(--aksen); border-color: var(--aksen); color: #062424; font-weight: 600; }
+  a.tombol { color: var(--teks); text-decoration: none; border: 1px solid var(--garis); border-radius: 6px; padding: 4px 11px; background: #2a2a2a; }
+  a.tombol:hover { border-color: #555; }
+  input[type=range] { accent-color: var(--aksen); }
+  .redup { color: var(--redup); }
+
+  /* bilah atas */
+  .atas { display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--garis); min-width: 0; }
+  #namaProyek { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34vw; }
+  #simpanInfo { font-size: 12px; color: var(--redup); }
+  .spasi { flex: 1; }
+
+  .isi { display: grid; grid-template-columns: 210px minmax(0, 1fr) 290px; min-height: 0; }
+  .kolom { background: var(--panel); border-right: 1px solid var(--garis); overflow: auto; padding: 12px; }
+  .kanan { border-right: 0; border-left: 1px solid var(--garis); padding: 0; display: flex; flex-direction: column; }
+  h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: var(--redup); text-transform: uppercase; letter-spacing: .06em; }
+
+  /* media */
+  .media { display: block; border: 1px dashed #3a3a3a; border-radius: 6px; padding: 8px; margin-bottom: 8px; cursor: pointer; position: relative; }
+  .media:hover { border-color: var(--aksen); }
+  .media input { display: none; }
+  .media div { font-weight: 600; }
+  .media small { display: block; color: var(--redup); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .media .lepas { position: absolute; right: 6px; top: 6px; padding: 0 6px; font-size: 11px; }
+  .bantu { color: var(--redup); font-size: 12px; margin: 8px 0 0; }
+
+  /* pemutar */
+  .tengah { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--bg); }
+  .layar { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+  .frame { position: relative; background: #000; overflow: hidden; box-shadow: 0 0 0 1px #333; }
+  .frame.kosong { display: none; }
+  #vw { position: absolute; overflow: hidden; background: #000; }
+  #vw video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 50% 50%; }
+  .tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; }
+  #vig { position: absolute; inset: 0; pointer-events: none; }
+  #ov { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; overflow: hidden; line-height: 1.2; }
+  #ov .pos { position: absolute; }
+  #ov .isi { pointer-events: auto; cursor: pointer; display: inline-block; max-width: 100%; }
+  #ov .isi.pilih { outline: 4px dashed var(--aksen); outline-offset: 6px; }
+  #still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: 5; }
+  #stillCap { position: absolute; left: 6px; bottom: 6px; z-index: 6; background: rgba(0,0,0,.7); color: #fff; font-size: 11px;
+              padding: 2px 8px; border-radius: 999px; }
+  .tarik { position: absolute; inset: 14px; border: 2px dashed #3a3a3a; border-radius: 12px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; text-align: center; gap: 6px; cursor: pointer; color: var(--redup); }
+  .tarik:hover, .tarik.nyala { border-color: var(--aksen); background: #1c2525; }
+  .tarik b { color: var(--teks); font-size: 16px; }
+  .tarik input { display: none; }
+  .transport { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--garis); background: var(--panel); }
+  #wkt { font-variant-numeric: tabular-nums; min-width: 120px; text-align: center; }
+  #bPutar { min-width: 44px; }
+
+  /* panel kanan */
+  .tab { display: flex; border-bottom: 1px solid var(--garis); }
+  .tab button { flex: 1; border: 0; border-radius: 0; background: transparent; color: var(--redup); padding: 10px 0; }
+  .tab button.aktif { color: var(--teks); box-shadow: inset 0 -2px var(--aksen); }
+  .halaman { display: none; padding: 12px; overflow: auto; flex: 1; min-height: 0; }
+  .halaman.aktif { display: block; }
+  label { display: block; color: var(--redup); margin: 10px 0 4px; }
+  .halaman > label:first-child, .dua label { margin-top: 0; }
+  select, input[type=text], input[type=number] { width: 100%; background: #2a2a2a; border: 1px solid var(--garis); border-radius: 6px; padding: 5px 8px; }
+  input:focus, select:focus { outline: 1px solid var(--aksen); outline-offset: 0; }
+  .desk { color: var(--redup); font-size: 12px; margin-top: 3px; }
+  .cek { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--teks); }
+  .cek input { margin: 0; }
+  .dua { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+  .geser { display: grid; grid-template-columns: 66px 1fr 32px; align-items: center; gap: 6px; margin: 5px 0; }
+  .geser span { color: var(--redup); }
+  .geser output { text-align: right; font-variant-numeric: tabular-nums; }
+  .kisi { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .kisi button { text-align: left; overflow: hidden; text-overflow: ellipsis; padding: 5px 8px; }
+  .kisi button.aktif, .pil.aktif { border-color: var(--aksen); background: #1f2c2c; color: var(--aksen); }
+  .pilihan { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pil { border-radius: 999px; padding: 5px 13px; }
+  .gayaEdit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 12px 0; }
+  .gayaEdit #gayaTombol { display: flex; gap: 6px; flex-wrap: wrap; }
+  .gayaEdit button { border-radius: 999px; padding: 4px 12px; }
+  .gayaEdit button.aktif { border-color: var(--aksen); color: var(--aksen); }
+  #trans { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  #vw.getar { animation: getar .12s infinite alternate; }
+  @keyframes getar { 0% { transform: translate(-1.5%, 1%); } 100% { transform: translate(1.5%, -1%); } }
+
+  /* timeline */
+  .tl { background: var(--panel); border-top: 1px solid var(--garis); display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .tlbar { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-bottom: 1px solid var(--garis); overflow-x: auto; }
+  .tlbar .sekat { width: 1px; height: 20px; background: var(--garis); margin: 0 4px; flex: none; }
+  .tlbar .cek { margin: 0; white-space: nowrap; }
+  .tlbar .zoom { display: flex; align-items: center; gap: 6px; margin-left: auto; flex: none; }
+  .tlbar .zoom input { width: 110px; }
+  #tlgulung { flex: 1; overflow: auto; position: relative; min-height: 0; }
+  #tlinner { position: relative; min-width: 100%; --strip: none; --bs: 100px; }
+  .baris { display: flex; border-bottom: 1px solid #262626; }
+  .nama { position: sticky; left: 0; z-index: 5; width: 84px; flex: none; background: var(--panel); border-right: 1px solid var(--garis);
+          font-size: 11px; color: var(--redup); padding: 5px 8px; text-transform: uppercase; letter-spacing: .05em; }
+  .lintasan { position: relative; flex: none; }
+  .penggaris { cursor: pointer; background: #1b1b1b; }
+  .tik { position: absolute; bottom: 0; width: 1px; height: 6px; background: #555; }
+  .tik.besar { height: 12px; background: #888; }
+  .tik i { position: absolute; left: 4px; top: -13px; font-style: normal; font-size: 10px; color: var(--redup); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .kepala { position: absolute; top: 0; bottom: 0; width: 0; z-index: 4; pointer-events: none; }
+  .kepala::before { content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px; background: var(--kepala); }
+  .kepala::after { content: ""; position: absolute; left: -6px; top: 0; border-style: solid; border-width: 9px 6px 0; border-color: var(--kepala) transparent transparent; }
+  #snapGaris { position: absolute; top: 0; bottom: 0; width: 1px; background: #ffd84d; z-index: 3; pointer-events: none; }
+  #sisip { position: absolute; width: 3px; background: var(--aksen); z-index: 6; pointer-events: none; border-radius: 2px; }
+  .blok { position: absolute; top: 3px; bottom: 3px; border-radius: 5px; overflow: hidden; border: 1px solid #000; background: #333;
+          user-select: none; touch-action: none; }
+  .blok.seg { cursor: grab; }
+  .blok.seg.seret { cursor: grabbing; opacity: .8; z-index: 7; box-shadow: 0 4px 14px rgba(0,0,0,.6); }
+  .blok.sel { outline: 2px solid #fff; outline-offset: -1px; z-index: 3; }
+  .blok i.u { position: absolute; top: 0; bottom: 0; background-image: var(--strip); background-size: var(--bs) 100%; background-repeat: no-repeat; }
+  .blok .et { position: absolute; left: 10px; top: 3px; font-size: 10px; background: rgba(0,0,0,.65); border-radius: 3px; padding: 0 5px; pointer-events: none; white-space: nowrap; }
+  .tepi { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize; z-index: 2; }
+  .tepi.kiri { left: 0; } .tepi.kanan { right: 0; }
+  .blok:hover .tepi, .blok.sel .tepi { background: rgba(255,255,255,.4); }
+  .blok.teks { background: var(--blokteks); cursor: grab; }
+  .blok.teks .et { position: static; display: block; background: none; color: #1b1000; font-size: 11px; font-weight: 600; padding: 4px 10px;
+                   overflow: hidden; text-overflow: ellipsis; }
+  .blok.sub { background: var(--bloksub); top: 4px; bottom: 4px; }
+  .blok.sub .et { position: static; display: block; background: none; font-size: 10px; padding: 3px 5px; overflow: hidden; text-overflow: ellipsis; }
+  .blok.sub.mati { opacity: .3; }
+  .blok.lagu { background: var(--bloklagu); top: 4px; bottom: 4px; }
+  .blok.lagu .et { position: static; display: block; background: none; font-size: 11px; padding: 2px 8px; }
+  .petunjukTL { position: absolute; left: 10px; top: 5px; font-size: 11px; color: #666; pointer-events: none; white-space: nowrap; }
+
+  .status { background: var(--panel); border-top: 1px solid var(--garis); padding: 0 12px; display: flex; align-items: center;
+            color: var(--redup); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; }
+  .status.galat { color: var(--galat); }
+
+  /* dialog */
+  .latar { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .dialog { background: var(--panel); border: 1px solid var(--garis); border-radius: 10px; padding: 18px; width: 640px; max-width: 94vw; max-height: 92vh; overflow: auto; }
+  .dialog h2 { margin: 0 0 10px; font-size: 16px; }
+  .bar { height: 4px; border-radius: 2px; background: #2c3a3a; overflow: hidden; position: relative; margin: 10px 0 6px; }
+  .bar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 35%; background: var(--aksen); animation: geserbar 1.1s ease-in-out infinite alternate; }
+  @keyframes geserbar { from { left: 0; } to { left: 65%; } }
+  .bar.pasti::after { animation: none; left: 0; width: var(--p, 0%); transition: width .5s ease-out; }
+  .versi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .versi button { text-align: left; padding: 10px; border: 2px solid var(--garis); border-radius: 8px; background: var(--panel2); white-space: normal; }
+  .versi button:hover { border-color: var(--aksen); }
+  .versi b { display: block; margin-bottom: 4px; }
+  .versi small { display: block; color: var(--redup); font-size: 11px; line-height: 1.3; margin-top: 4px; }
+  .dialog video { width: 100%; max-height: 52vh; background: #000; border-radius: 6px; margin-top: 10px; }
+  .galatTeks { color: var(--galat); white-space: pre-wrap; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="atas">
+  <a class="tombol" href="/" title="Kembali ke tampilan sederhana">← Mudah</a>
+  <span id="namaProyek">Tanpa judul</span><span id="simpanInfo"></span>
+  <span class="spasi"></span>
+  <button id="bUndo" title="Urungkan (Ctrl+Z)" disabled>↶ Urungkan</button>
+  <button id="bRedo" title="Ulangi (Ctrl+Y)" disabled>↷ Ulangi</button>
+  <button id="bPro" disabled title="Edit lengkap sekali klik: buang bagian gagal dan jeda, zoom, judul pembuka, subtitle, warna, musik, suara dibersihkan">Edit Pro</button>
+  <button id="bEO" disabled title="Gemini menonton videomu lalu menyusun potongan, teks, dan warna">Edit Otomatis</button>
+  <button id="bCapcut" disabled title="Buka hasil edit ini di CapCut sebagai draft (potongan, teks, subtitle, musik) untuk diedit lagi di sana">Kirim ke CapCut</button>
+  <button class="utama" id="bExport" disabled>Export</button>
+</div>
+
+<div class="isi">
+  <div class="kolom">
+    <h3>Media</h3>
+    <label class="media"><div>Video</div><small id="nVideo">belum ada</small>
+      <input autocomplete="off" type="file" accept="video/*" data-jenis="video"></label>
+    <label class="media"><div>Suara terpisah</div><small id="nAudio">opsional</small>
+      <input autocomplete="off" type="file" accept="audio/*,video/*" data-jenis="audio"><button class="lepas" id="lAudio" hidden type="button" title="Lepas">✕</button></label>
+    <label class="media"><div>Musik</div><small id="nMusik">opsional</small>
+      <input autocomplete="off" type="file" accept="audio/*" data-jenis="musik"><button class="lepas" id="lMusik" hidden type="button" title="Lepas">✕</button></label>
+    <div class="bantu" id="infoMedia"></div>
+    <div class="geser"><span>Volume suara</span><input autocomplete="off" type="range" id="volSuara" min="0" max="200" step="5" value="100"><output id="oVolSuara">100</output></div>
+    <div class="geser"><span>Volume musik</span><input autocomplete="off" type="range" id="volMusik" min="0" max="200" step="5" value="100"><output id="oVolMusik">100</output></div>
+    <div class="bantu">Suara terpisah, musik, dan volume dipakai saat Export. Di pemutar ini yang terdengar suara bawaan video.</div>
+  </div>
+
+  <div class="tengah">
+    <div class="layar" id="layar">
+      <div class="frame kosong" id="frame">
+        <div id="vw"><video id="v0" preload="auto" playsinline></video><video id="v1" preload="auto" playsinline></video></div>
+        <div class="tint" id="tintSuhu"></div><div class="tint" id="tintTint"></div><div id="vig"></div><div id="trans"></div>
+        <div id="ov"></div>
+        <img id="still" alt="" hidden><span id="stillCap" hidden>Warna akurat - tekan Play untuk kembali</span>
+      </div>
+      <label class="tarik" id="tarik"><b>Tarik video ke sini</b><span>atau klik untuk memilih video</span>
+        <input autocomplete="off" type="file" accept="video/*" data-jenis="video"></label>
+    </div>
+    <div class="transport">
+      <button id="bMundur" title="Mundur 1 frame (←)">|◀</button>
+      <button id="bPutar" class="utama" title="Putar / jeda (Spasi)" disabled>▶</button>
+      <button id="bMaju" title="Maju 1 frame (→)">▶|</button>
+      <span id="wkt">0:00.0 / 0:00.0</span>
+      <span class="spasi"></span>
+      <span class="redup" title="Warna di pemutar hanya perkiraan. Tekan tombol di kanan untuk melihat warna yang sama persis dengan hasil export.">warna: perkiraan</span>
+      <button id="bAkurat" title="Tampilkan gambar dengan warna yang sama persis dengan hasil export">Warna akurat</button>
+    </div>
+    <div class="gayaEdit" id="gayaEdit" hidden><span class="redup">Gaya edit sekali klik</span><span id="gayaTombol"></span></div>
+  </div>
+
+  <div class="kolom kanan">
+    <div class="tab">
+      <button data-hal="teks" class="aktif">Teks</button><button data-hal="warna">Warna</button>
+      <button data-hal="bentuk">Bentuk</button><button data-hal="item">Item</button>
+    </div>
+    <div class="halaman aktif" id="h-teks">
+      <label>Gaya teks</label><select autocomplete="off" id="gaya"></select><div class="desk" id="dGaya"></div>
+      <label>Judul di awal (hook)</label><input autocomplete="off" type="text" id="hook" placeholder="Day 12 of|Learning in Public">
+      <div class="desk">Pakai tanda | untuk judul 2 baris: baris kecil|Kata Besar</div>
+      <label>Font judul</label><select autocomplete="off" id="judul"></select><div class="desk" id="dJudul"></div>
+      <label class="cek"><input autocomplete="off" type="checkbox" id="subtitle"><span>Subtitle otomatis</span></label>
+      <div class="desk">Subtitle muncul setelah kamu menekan "Buat subtitle" di timeline.</div>
+      <div class="aksi"><button id="bSrt" title="Subtitle sebagai file .srt untuk YouTube, TikTok, atau aplikasi lain">Simpan subtitle (.srt)</button></div>
+    </div>
+    <div class="halaman" id="h-warna">
+      <label>Template cepat</label><div class="kisi" id="templat"></div>
+      <label>Preset warna</label><select autocomplete="off" id="warna"></select><div class="desk" id="dWarna"></div>
+      <label>Pengaturan</label><div id="geser"></div>
+      <div class="aksi" style="margin-top:8px"><button id="bAuto" title="Koreksi eksposur, kontras, dan warna hasil ukur dari videomu" disabled>Auto</button><button id="bReset">Reset</button></div>
+      <div class="desk">Pemutar hanya memperkirakan warna. Tekan "Warna akurat" untuk melihat hasil sebenarnya.</div>
+    </div>
+    <div class="halaman" id="h-bentuk">
+      <label>Ukuran video</label><div class="pilihan" id="pRasio"></div>
+      <label>Isi bingkai</label>
+      <div class="pilihan" id="pBingkai"><button class="pil" data-b="isi">Isi penuh</button><button class="pil" data-b="letterbox">Letterbox</button></div>
+      <div class="desk">Isi penuh: gambar memenuhi layar (sisi yang berlebih terpotong). Letterbox: gambar utuh dengan bingkai hitam, teks di bingkai.</div>
+    </div>
+    <div class="halaman" id="h-item">
+      <div id="itKosong" class="desk">Klik potongan video atau teks di timeline (atau teks di pemutar) untuk mengubahnya di sini.</div>
+      <div id="itSeg" hidden>
+        <h3 id="itSegNo">Potongan video</h3>
+        <div class="dua"><div><label>Mulai (detik)</label><input autocomplete="off" type="number" id="sMulai" step="0.1" min="0"></div>
+          <div><label>Selesai (detik)</label><input autocomplete="off" type="number" id="sSelesai" step="0.1" min="0"></div></div>
+        <div class="desk" id="sInfo"></div>
+        <label>Zoom <output id="oZoom">1.00</output>x</label><input autocomplete="off" type="range" id="sZoom" min="1" max="1.2" step="0.01" style="width:100%">
+        <label>Kecepatan <output id="oKec">1</output>×</label><input autocomplete="off" type="range" id="sKec" min="0.25" max="3" step="0.05" style="width:100%">
+        <div class="desk">Di bawah 1 = slow motion, di atas 1 = dipercepat. Suara ikut, nadanya tetap.</div>
+        <label>Efek</label><select autocomplete="off" id="sEfek"></select>
+        <label>Transisi masuk</label><select autocomplete="off" id="sTrans"></select>
+        <div class="desk">Transisi dipasang di sambungan dengan potongan sebelumnya.</div>
+        <div class="aksi"><button id="sPisah" title="Pisah di playhead (S)">✂ Pisah</button><button id="sGanda">Duplikat</button><button id="sHapus">Hapus</button></div>
+      </div>
+      <div id="itEl" hidden>
+        <h3>Teks</h3>
+        <label>Jenis</label><select autocomplete="off" id="eJenis"></select>
+        <label>Tulisan</label><input autocomplete="off" type="text" id="eTeks">
+        <div class="desk" id="eBantu"></div>
+        <div class="dua"><div><label>Muncul (detik)</label><input autocomplete="off" type="number" id="eMulai" step="0.1" min="0"></div>
+          <div><label>Hilang (detik)</label><input autocomplete="off" type="number" id="eSelesai" step="0.1" min="0"></div></div>
+        <div class="desk">Waktu dihitung dari awal video hasil edit.</div>
+        <div class="aksi"><button id="eGanda">Duplikat</button><button id="eHapus">Hapus</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tl">
+  <div class="tlbar">
+    <button id="bPisah" title="Pisah potongan di playhead (S)">✂ Pisah</button>
+    <button id="bHapus" title="Hapus yang dipilih (Delete)">Hapus</button>
+    <button id="bGanda" title="Gandakan yang dipilih">Duplikat</button>
+    <span class="sekat"></span>
+    <button id="bTeks" title="Tambah teks di posisi playhead">+ Teks</button>
+    <span class="sekat"></span>
+    <label class="cek"><input autocomplete="off" type="checkbox" id="subtitle2"><span>Subtitle</span></label>
+    <button id="bBuatSub" title="Mengubah suara jadi tulisan (butuh beberapa detik)">Buat subtitle</button>
+    <button id="bHening" title="Buang bagian hening, hanya bagian yang ada suaranya yang dipertahankan">✂ Potong hening</button>
+    <div class="zoom"><span class="redup">Zoom</span><input autocomplete="off" type="range" id="zoomTL" min="8" max="300" step="1" value="40"><button id="bPas" title="Pas ke lebar layar">Pas</button></div>
+  </div>
+  <div id="tlgulung">
+    <div id="tlinner"><div id="tlisi"></div><div class="kepala" id="kepala" hidden></div><div id="snapGaris" hidden></div><div id="sisip" hidden></div></div>
+  </div>
+</div>
+
+<div class="status" id="status">Siap</div>
+
+<div class="latar" id="mEO" hidden><div class="dialog">
+  <h2>Edit Otomatis</h2>
+  <div id="eoJalan"><div>Gemini sedang menonton videomu dan menyusun edit. Ini bisa memakan waktu satu-dua menit.</div><div class="bar"></div><div id="eoLog" class="redup">Memulai…</div></div>
+  <div id="eoGalat" class="galatTeks" hidden></div>
+  <div id="eoHasil" hidden><div id="eoRingkas"></div><div class="redup" style="margin-top:6px">Pilih salah satu versi. Hasilnya langsung masuk ke timeline dan bisa diurungkan.</div><div class="versi" id="eoVersi"></div></div>
+  <div class="aksi"><button id="eoTutup">Batal</button></div>
+</div></div>
+
+<div class="latar" id="mPro" hidden><div class="dialog">
+  <h2>Sedang mengedit videomu</h2>
+  <div id="proJalan"><div class="redup">Membuang bagian gagal dan jeda, menambah zoom, judul pembuka, subtitle, warna, dan musik. Biasanya kurang dari satu menit.</div><div class="bar"></div><div id="proLog" class="redup">Memulai…</div></div>
+  <div id="proGalat" class="galatTeks" hidden></div>
+  <div class="aksi"><button id="proTutup">Edit sendiri saja</button></div>
+</div></div>
+
+<div class="latar" id="mExp" hidden><div class="dialog">
+  <h2>Export</h2>
+  <div id="exJalan"><div class="bar"></div><div id="exLog" class="redup">Memulai…</div></div>
+  <div id="exGalat" class="galatTeks" hidden></div>
+  <div id="exHasil" hidden><div id="exNama" class="redup"></div><video id="exVideo" controls></video></div>
+  <div class="aksi"><button id="exBuka" hidden>Buka folder</button><button id="exCaption" hidden>Buat caption</button><button id="exTutup">Tutup</button></div>
+</div></div>
+
+<div class="latar" id="mCap" hidden><div class="dialog">
+  <h2>Caption &amp; cover</h2>
+  <input type="text" id="capCatatan" placeholder="Konteks tambahan (opsional)" style="width:100%;margin-bottom:8px">
+  <div id="capJalan" class="redup" hidden>Memulai…</div>
+  <div id="capGalat" class="galatTeks" hidden></div>
+  <div id="capHasil" hidden></div>
+  <div class="aksi"><button id="capBuat" class="utama">Buat caption</button><button id="capTutup">Tutup</button></div>
+</div></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const r2 = x => Math.round(x * 100) / 100;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nama = p => String(p).split(/[\\/]/).pop();
+const stem = p => nama(p).replace(/\.[^.]+$/, "");
+const fmt = s => { const d = Math.round(Math.max(0, s) * 10); return `${Math.floor(d / 600)}:${String(Math.floor(d % 600 / 10)).padStart(2, "0")}.${d % 10}`; };
+const fmtMenit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+// ---------- Konstanta (cermin dari autoedit.py supaya pemutar mirip hasil render) ----------
+const KRIM = "#FFF2E6", KUNING = "#F2CF66", MINT = "#9DF2C4", COKLAT = "rgba(72,48,32,.6)";
+const FS = 0.8;            // ukuran font ASS -> CSS (ASS memakai tinggi baris, CSS memakai em)
+const MIN_POTONG = 0.3;    // potongan/teks terpendek (detik)
+const RASIO_UKURAN = { "9:16": [1080, 1920], "4:5": [1080, 1350], "1:1": [1080, 1080], "16:9": [1920, 1080] };
+const LABEL = { eksposur: "Eksposur", kontras: "Kontras", saturasi: "Saturasi", suhu: "Suhu", tint: "Tint", bayangan: "Bayangan",
+  sorotan: "Sorotan", vignette: "Vignette", glow: "Glow", tajam: "Tajam", grain: "Grain" };
+const JENIS = { judul: "Judul", label: "Label", kata: "Kata kunci", daftar: "Daftar", kutipan: "Kutipan", tanggal: "Tanggal", penutup: "Penutup" };
+const BANTU_JENIS = { judul: "Judul besar di atas. Pakai | untuk 2 baris.", label: "Tulisan kecil di kiri atas, mis. \"life lessons\".",
+  kata: "Satu kata besar miring di tengah layar.", daftar: "Diawali nomor, mis. \"1 Bangun pagi\". Muncul di kiri atas.",
+  kutipan: "Kalimat miring di tengah, diberi tanda kutip.", tanggal: "Stempel oranye di kanan atas, mis. \"12 Mei 2025\".",
+  penutup: "Tulisan penutup di tengah. Pakai | untuk 2 baris." };
+const PENGISI = /^(um+|uh+|uhm+|er+|erm+|eh+|em+|ehm+|hmm+|mm+|ah+|anu)[.,!?]*$/i;
+const JUDUL = { serif: ["Georgia", 0, 0, 1.0], miring: ["Bodoni MT", 1, 0, 1.05], script: ["Edwardian Script ITC", 0, 0, 1.45],
+  tebal: ["Segoe UI", 0, 1, 0.95], kartun: ["Kristen ITC", 0, 0, 1.0], retro: ["Cooper Black", 0, 0, 0.95] };
+const HANGAT = { align: 2, ml: 90, mr: 90, mv: 600, maks: 5, outline: 3, bayangan: 2, wo: COKLAT,
+  hook: { font: "Georgia", u: 80, c: KRIM, b: 0, i: 1 } };
+const GAYA = {  // font, ukuran (kanvas 1080), warna, huruf, efek, kotak, miring, tebal, align, margin
+  "hangat": { ...HANGAT, font: "Segoe UI", u: 72, c: KRIM, huruf: "kecil", efek: "aksen", af: "Georgia" },
+  "hangat-kuning": { ...HANGAT, font: "Segoe UI", u: 74, c: KUNING, huruf: "asli", efek: "glow" },
+  "hangat-serif": { ...HANGAT, font: "Georgia", u: 74, c: KRIM, i: 1, huruf: "kecil", efek: "aksen", af: "Georgia" },
+  "hangat-kotak": { ...HANGAT, font: "Segoe UI", u: 62, c: KRIM, kotak: 1, huruf: "asli", efek: "aksen", af: "Segoe UI", outline: 12, bayangan: 0 },
+  "kartun": { ...HANGAT, font: "Kristen ITC", u: 70, c: KRIM, huruf: "asli", efek: "loncat", hook: { ...HANGAT.hook, font: "Kristen ITC", i: 0 } },
+  "sinematik": { font: "Bahnschrift", u: 84, c: "#fff", outline: 0, bayangan: 1.5, align: 4, ml: 90, mr: 470, mv: 0, maks: 4, huruf: "kecil", efek: "fade" },
+  "minimal": { font: "Consolas", u: 48, c: "#fff", outline: 0, bayangan: 1, align: 2, ml: 80, mr: 80, mv: 690, maks: 7, huruf: "subtitle", efek: "fade" },
+  "bold": { font: "Arial Black", u: 68, c: "#fff", outline: 0, bayangan: 2, align: 2, ml: 60, mr: 60, mv: 700, maks: 4, huruf: "kapital", efek: "sorot" },
+  "pop": { font: "Segoe UI", u: 132, c: MINT, outline: 0, bayangan: 2, align: 5, ml: 60, mr: 60, mv: 0, maks: 2, huruf: "asli", efek: "pop", b: 1 },
+};
+// elemen: font, ukuran, warna, miring, spasi huruf, align, margin kiri/kanan, fade masuk/keluar (detik)
+const ELEMEN = {
+  label: { f: "'Segoe UI Semibold','Segoe UI'", u: 40, c: KRIM, i: 0, sp: 4, al: 7, ml: 70, fi: .3, fo: .3 },
+  kata: { f: "Georgia", u: 130, c: KUNING, i: 1, sp: 0, al: 5, ml: 60, fi: .08, fo: .2 },
+  daftar: { f: "Georgia", u: 62, c: KRIM, i: 0, sp: 0, al: 7, ml: 80, fi: .25, fo: .25 },
+  kutipan: { f: "Georgia", u: 66, c: KRIM, i: 1, sp: 0, al: 5, ml: 120, fi: .4, fo: .4 },
+  tanggal: { f: "Consolas", u: 40, c: "#FFA840", i: 0, sp: 2, al: 9, ml: 70, fi: .2, fo: .2 },
+};
+
+// ---------- Keadaan ----------
+let info, P = null, namaProyek = null;          // P = proyek yang sedang diedit (format /render_proyek)
+let dur = 0, srcW = 9, srcH = 16, siap = false;  // data video sumber
+let kata = null, sedangSub = false;             // transkrip [{w,s,e}] detik sumber; null = belum ada
+let sel = null;                                 // {k: "seg"|"el", i}
+let t = 0, iSeg = 0, main = false, aktif = 0;   // playhead (detik timeline), potongan aktif, status putar, video aktif (0/1)
+let pxs = 40, fScale = 1;                       // piksel per detik di timeline, skala pemutar
+let strip = null, autoNilai = null, autoP = null, tplAktif = null;
+let frasaCache = null, kunciOv = "", perluAuto = false;
+let rafId = 0, nomorVideo = 0, nomorKata = 0, nomorStrip = 0, nomorAkurat = 0, nomorEO = 0, nomorExp = 0, nomorSimpan = 0, nomorSeret = 0, nomorTpl = 0;
+let verMedia = Date.now(), dimuat = { video: null, kata: null };
+const TL = { off: [], total: 0 };
+const V = [$("v0"), $("v1")];
+
+const status = (teks, galat) => { $("status").textContent = teks; $("status").className = "status" + (galat ? " galat" : ""); };
+const minGeser = k => ["vignette", "glow", "tajam", "grain"].includes(k) ? 0 : -100;
+const nol = () => Object.fromEntries(info.atur.map(k => [k, 0]));
+
+async function api(url, data) {
+  const r = await fetch(url, data === undefined ? {} : { method: "POST", body: JSON.stringify(data) });
+  const j = await r.json();
+  if (j.galat) throw new Error(j.galat);
+  return j;
+}
+
+async function tunggu(id, saat) {  // pantau pekerjaan latar belakang di server
+  for (;;) {
+    const s = await api("/status?id=" + id);
+    if (s.log.length) (saat || status)(s.log[s.log.length - 1]);
+    if (s.selesai) { if (s.galat) throw new Error(s.galat); return s.hasil; }
+    await new Promise(r => setTimeout(r, 700));
+  }
+}
+
+// ---------- Proyek: bentuk awal, normalisasi, salinan bersih ----------
+function proyekBaru(video) {
+  const t0 = Object.values(info.template)[0];
+  return { sumber: [video], audio: null, musik: null, rasio: "asli", bingkai: "isi", gaya: t0.gaya, warna: t0.warna || "",
+    judul: t0.judul || "", atur: nol(), hook: "", durasi_hook: 3, subtitle: true, potongan: [], elemen: [] };
+}
+
+function normalisasi(p) {
+  const h = { ...proyekBaru(nama(p.sumber[0])), ...p };
+  h.sumber = p.sumber.map(nama);
+  h.audio = p.audio ? nama(p.audio) : null;
+  h.musik = p.musik ? nama(p.musik) : null;
+  perluAuto = h.atur === "auto";
+  h.atur = { ...nol(), ...(perluAuto ? {} : h.atur) };
+  h.warna = h.warna || ""; h.judul = h.judul || ""; h.hook = h.hook || ""; h.bingkai = h.bingkai || "isi";
+  h.durasi_hook = h.durasi_hook ?? 3;
+  h.potongan = (p.potongan || []).map(s => ({ mulai: s.mulai, selesai: s.selesai, zoom: s.zoom ?? 1, ...(s.transisi ? { transisi: s.transisi } : {}),
+    ...(s.kecepatan && s.kecepatan !== 1 ? { kecepatan: s.kecepatan } : {}), ...(s.efek ? { efek: s.efek } : {}) }));
+  h.volume_suara = p.volume_suara ?? 1; h.volume_musik = p.volume_musik ?? 1;
+  h.elemen = (p.elemen || []).map(e => ({ jenis: JENIS[e.jenis] ? e.jenis : "label", teks: e.teks || "", mulai: e.mulai, selesai: e.selesai }));
+  return h;
+}
+
+function proyekBersih() {
+  const p = JSON.parse(JSON.stringify(P));
+  p.elemen = p.elemen.filter(e => (e.teks || "").trim()).map(e => ({ jenis: e.jenis, teks: e.teks.trim(), mulai: r2(e.mulai), selesai: r2(e.selesai) }));
+  p.hook = p.hook.trim();
+  return p;
+}
+
+// ---------- Riwayat (urungkan/ulangi) dan penyimpanan otomatis ----------
+const rw = { u: [], r: [], kunci: null, waktu: 0 };
+let tSimpan = 0;
+
+// catat() dipanggil SEBELUM mengubah P; kunci yang sama dalam 0,9 detik digabung jadi satu langkah (slider, mengetik)
+function catat(kunci) {
+  jadwalSimpan();
+  const kini = Date.now();
+  if (kunci && kunci === rw.kunci && kini - rw.waktu < 900) { rw.waktu = kini; return; }
+  rw.u.push(JSON.stringify(P)); if (rw.u.length > 100) rw.u.shift();
+  rw.r = []; rw.kunci = kunci; rw.waktu = kini; tombolRiwayat();
+}
+function edit(kunci, fn, ke = false) { if (!P) return; catat(kunci); fn(); setelahUbah(ke); }
+
+function tombolRiwayat() { $("bUndo").disabled = !rw.u.length; $("bRedo").disabled = !rw.r.length; }
+function pulihkan(dari, ke) {
+  if (!dari.length) return;
+  ke.push(JSON.stringify(P)); P = JSON.parse(dari.pop()); rw.kunci = null; tplAktif = null;
+  tombolRiwayat(); sinkronMedia(); jadwalSimpan(); setelahUbah(true);
+}
+const undo = () => pulihkan(rw.u, rw.r);
+const redo = () => pulihkan(rw.r, rw.u);
+
+function jadwalSimpan() {
+  if (!P) return;
+  $("simpanInfo").textContent = "menyimpan…";
+  clearTimeout(tSimpan); tSimpan = setTimeout(simpan, 1200);
+}
+const namaSimpan = () => namaProyek || `${stem(P.sumber[0])}.kerja.proyek.json`;
+async function simpan() {
+  if (!P) return;
+  const n = ++nomorSimpan;
+  try {
+    const r = await api("/simpan_proyek", { proyek: proyekBersih(), nama: namaSimpan() });
+    if (n !== nomorSimpan) return;
+    namaProyek = r.p; $("simpanInfo").textContent = "tersimpan"; judulProyek();
+  } catch (e) { if (n === nomorSimpan) { $("simpanInfo").textContent = ""; status("Gagal menyimpan: " + e.message, true); } }
+}
+addEventListener("pagehide", () => {
+  if (P && $("simpanInfo").textContent === "menyimpan…")
+    fetch("/simpan_proyek", { method: "POST", keepalive: true, body: JSON.stringify({ proyek: proyekBersih(), nama: namaSimpan() }) }).catch(() => {});
+});
+function judulProyek() { $("namaProyek").textContent = P ? (namaProyek ? namaProyek.replace(/\.proyek\.json$/, "") : stem(P.sumber[0])) : "Tanpa judul"; }
+
+// ---------- Hitungan timeline ----------
+function hitung() {
+  let o = 0;
+  TL.off = P.potongan.map((s, i) => { const x = o; o += panjang(i); return x; });
+  TL.total = o;
+}
+const kec = i => P.potongan[i].kecepatan || 1;
+const panjang = i => (P.potongan[i].selesai - P.potongan[i].mulai) / kec(i);  // panjang di hasil (setelah kecepatan)
+function cariSeg(tl) {  // detik timeline -> potongan + detik sumber
+  const n = P.potongan.length;
+  for (let i = 0; i < n; i++)
+    if (tl < TL.off[i] + panjang(i) || i === n - 1) return { i, src: P.potongan[i].mulai + clamp(tl - TL.off[i], 0, panjang(i)) * kec(i) };
+  return { i: 0, src: 0 };
+}
+
+// setelahUbah: segarkan semua tampilan. ke = false (tanpa geser video), true (ke playhead), atau angka (ke detik itu)
+function setelahUbah(ke = false) {
+  if (!P) return;
+  hitung(); frasaCache = null; kunciOv = ""; hapusStill();
+  if (sel && !(sel.k === "seg" ? P.potongan[sel.i] : P.elemen[sel.i])) sel = null;
+  t = clamp(t, 0, TL.total);
+  tataFrame(); jadwalTL(); isiPanel();
+  if (ke !== false) pergi(ke === true ? t : ke); else segarWaktu();
+}
+
+// ---------- Pemutar ----------
+function ukuranKeluar() {
+  if (P.rasio === "asli") { const k = 1080 / Math.min(srcW, srcH); return { w: Math.round(srcW * k / 2) * 2, h: Math.round(srcH * k / 2) * 2 }; }
+  const [w, h] = RASIO_UKURAN[P.rasio]; return { w, h };
+}
+function areaGambar(o) {  // bagian layar berisi gambar (hanya letterbox), untuk menaruh teks di bingkai hitam
+  if (P.bingkai !== "letterbox") return null;
+  const tinggi = Math.min(o.h, Math.round(o.w * srcH / srcW));
+  return tinggi < o.h - 40 ? { atas: (o.h - tinggi) / 2, bawah: (o.h + tinggi) / 2 } : null;
+}
+
+function tataFrame() {
+  if (!P || !siap) return;
+  const o = ukuranKeluar(), kotak = $("layar").getBoundingClientRect();
+  const f = fScale = Math.max(0.05, Math.min((kotak.width - 32) / o.w, (kotak.height - 32) / o.h));
+  $("frame").style.width = o.w * f + "px"; $("frame").style.height = o.h * f + "px";
+  Object.assign($("ov").style, { width: o.w + "px", height: o.h + "px", transform: `scale(${f})` });
+  const vw = $("vw").style;
+  if (P.bingkai === "letterbox") {  // gambar utuh di tengah, sisanya hitam
+    const pw = Math.min(o.w, o.h * srcW / srcH), ph = Math.min(o.h, o.w * srcH / srcW);
+    Object.assign(vw, { left: (o.w - pw) / 2 * f + "px", top: (o.h - ph) / 2 * f + "px", width: pw * f + "px", height: ph * f + "px" });
+    V.forEach(v => v.style.objectFit = "fill");
+  } else {
+    Object.assign(vw, { left: "0px", top: "0px", width: "100%", height: "100%" });
+    V.forEach(v => v.style.objectFit = "cover");
+  }
+  // perkiraan warna: eksposur/kontras/saturasi lewat filter CSS, suhu & tint lewat lapisan campur, vignette lewat gradasi
+  const a = P.atur, fl = [];
+  if (a.eksposur) fl.push(`brightness(${Math.pow(2, a.eksposur / 100).toFixed(3)})`);
+  if (a.kontras) fl.push(`contrast(${(1 + a.kontras / 200).toFixed(3)})`);
+  if (a.saturasi) fl.push(`saturate(${(1 + a.saturasi / 100).toFixed(3)})`);
+  if ((P.warna || "").startsWith("monokrom"))  // perkiraan preset monokrom (warna akurat lewat tombol "Warna akurat")
+    fl.push(P.warna === "monokrom-hangat" ? "grayscale(1) sepia(0.35)" : P.warna === "monokrom-dingin" ? "grayscale(1) sepia(0.2) hue-rotate(180deg)" : "grayscale(1) contrast(1.06)");
+  $("vw").style.filter = fl.join(" ") || "none";
+  const lapis = (id, v, panas, dingin) => {
+    $(id).style.background = v > 0 ? panas : dingin; $(id).style.opacity = Math.min(1, Math.abs(v) / 100 * 0.6);
+  };
+  lapis("tintSuhu", a.suhu, "rgb(255,150,60)", "rgb(60,130,255)");
+  lapis("tintTint", a.tint, "rgb(255,60,200)", "rgb(60,220,100)");
+  $("vig").style.background = a.vignette > 0 ? `radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,${(a.vignette / 100 * 0.75).toFixed(2)}) 100%)` : "none";
+}
+new ResizeObserver(() => { tataFrame(); }).observe($("layar"));
+
+const vAktif = () => V[aktif];
+// perkiraan efek di pemutar (hasil export memakai filter ffmpeg di autoedit.EFEK)
+const EFEK_CSS = { blur: "blur(6px)", hitamputih: "grayscale(1) contrast(1.08)", sepia: "sepia(0.9)", vhs: "saturate(0.8) contrast(1.05) sepia(0.15) hue-rotate(-8deg)",
+  glow: "brightness(1.1) saturate(1.1) drop-shadow(0 0 12px rgba(255,255,255,.35))" };
+function zoomSeg() {
+  const s = P.potongan[iSeg] || {}, z = s.zoom || 1, cermin = s.efek === "cermin";
+  V.forEach(v => {
+    v.style.transform = (z > 1.001 ? `scale(${z})` : "") + (cermin ? " scaleX(-1)" : "");
+    v.playbackRate = s.kecepatan || 1;
+    v.dataset.efek = EFEK_CSS[s.efek] || "";
+  });
+  $("vw").classList.toggle("getar", s.efek === "getar");
+  efekTransisi();
+}
+function efekTransisi() {  // transisi di sambungan, sama dengan autoedit.transisi_filter
+  let warna = "", op = 0, blur = 0;
+  const s = P && P.potongan[iSeg], nx = P && P.potongan[iSeg + 1];
+  if (s) {
+    const masuk = t - TL.off[iSeg], keluar = TL.off[iSeg] + panjang(iSeg) - t;
+    const pakai = (jenis, d) => {
+      if (jenis === "fade" && d < 0.25) { warna = "#000"; op = Math.max(op, 1 - d / 0.25); }
+      if (jenis === "flash" && d < 0.15) { warna = "#fff"; op = Math.max(op, 1 - d / 0.15); }
+      if (jenis === "blur" && d < 0.25) blur = Math.max(blur, d < 0.12 ? 10 : 4);
+    };
+    if (iSeg > 0) pakai(s.transisi, masuk);
+    if (nx) pakai(nx.transisi, keluar);
+  }
+  // dipanggil tiap frame saat diputar: style hanya ditulis kalau berubah, supaya browser tidak menghitung ulang terus
+  const kunci = `${warna}|${op.toFixed(2)}|${blur}|${V[0].dataset.efek}`;
+  if (kunci === kunciTrans) return;
+  kunciTrans = kunci;
+  $("trans").style.background = warna; $("trans").style.opacity = op;
+  V.forEach(v => v.style.filter = [v.dataset.efek, blur ? `blur(${blur}px)` : ""].filter(Boolean).join(" ") || "none");
+}
+let kunciTrans = "";
+function siapkanStandby() {  // video cadangan sudah menunggu di awal potongan berikutnya supaya sambungan tanpa jeda
+  const s = P.potongan[iSeg], nx = P.potongan[iSeg + 1];
+  if (!nx || Math.abs(nx.mulai - s.selesai) < 0.05) return;
+  const sb = V[1 - aktif];
+  if (Math.abs(sb.currentTime - nx.mulai) > 0.02) sb.currentTime = nx.mulai;
+}
+
+function pergi(tl) {  // geser playhead (dan video) ke detik timeline
+  if (!siap) return;
+  t = clamp(tl, 0, TL.total);
+  const { i, src } = cariSeg(t);
+  iSeg = i;
+  const v = vAktif(), sasaran = Math.min(src, Math.max(0, dur - 0.05));
+  if (Math.abs(v.currentTime - sasaran) > 0.01) v.currentTime = sasaran;
+  zoomSeg(); siapkanStandby(); hapusStill(); segarWaktu();
+}
+
+function putar() {
+  if (!siap) return;
+  if (t >= TL.total - 0.05) pergi(0);
+  main = true; hapusStill();
+  vAktif().play().catch(() => {});
+  $("bPutar").textContent = "❚❚"; jadwalTick();
+}
+const jadwalTick = () => { cancelAnimationFrame(rafId); rafId = requestAnimationFrame(tick); };
+function jeda() { main = false; cancelAnimationFrame(rafId); V.forEach(v => v.pause()); $("bPutar").textContent = "▶"; }
+
+function tick() {
+  if (langkahPutar()) jadwalTick();
+}
+function langkahPutar() {  // satu putaran sinkronisasi; false = berhenti. Juga dipanggil timeupdate kalau animasi browser ditahan (tab di latar)
+  if (!main) return false;
+  const s = P.potongan[iSeg], v = vAktif();
+  if (!s) { jeda(); return false; }
+  if (v.currentTime >= s.selesai - 0.02 || v.ended) { if (!lanjut()) return false; }
+  else t = TL.off[iSeg] + Math.max(0, v.currentTime - s.mulai) / kec(iSeg);
+  segarWaktu(true);
+  return true;
+}
+V.forEach(v => v.addEventListener("timeupdate", () => { if (v === vAktif()) langkahPutar(); }));
+function lanjut() {  // potongan habis: pindah ke berikutnya (atau selesai)
+  const s = P.potongan[iSeg], nx = P.potongan[iSeg + 1];
+  if (!nx) { jeda(); t = TL.total; segarWaktu(); return false; }
+  if (Math.abs(nx.mulai - s.selesai) >= 0.05) {  // tidak bersambung: tukar ke video cadangan yang sudah siap
+    V[1 - aktif].play().catch(() => {}); vAktif().pause(); aktif = 1 - aktif;
+    V[aktif].style.zIndex = 2; V[1 - aktif].style.zIndex = 1;
+  }
+  iSeg++; t = TL.off[iSeg]; zoomSeg(); siapkanStandby();
+  return true;
+}
+
+function segarWaktu(ikut) {
+  $("wkt").textContent = `${fmt(t)} / ${fmt(TL.total)}`;
+  efekTransisi();
+  $("kepala").style.left = 84 + t * pxs + "px";
+  if (ikut) {  // saat memutar, timeline ikut bergeser
+    const g = $("tlgulung"), x = 84 + t * pxs;
+    if (x > g.scrollLeft + g.clientWidth - 40 || x < g.scrollLeft + 90) g.scrollLeft = Math.max(0, x - 120);
+  }
+  gambarOverlay();
+}
+
+function hapusStill() { nomorAkurat++; $("still").hidden = $("stillCap").hidden = true; }
+async function warnaAkurat() {  // gambar persis hasil export di detik ini, lewat /pratinjau
+  if (!siap) return;
+  jeda();
+  const n = ++nomorAkurat, { src } = cariSeg(t);
+  $("bAkurat").disabled = true; status("Membuat gambar dengan warna akurat…");
+  try {
+    const j = await api("/pratinjau", { video: P.sumber[0], audio: P.audio, gaya: P.gaya, warna: P.warna, judul: P.judul,
+      hook: P.hook, rasio: P.rasio, atur: P.atur, t: src, bingkai: P.bingkai });
+    const blob = await (await fetch("/file?p=" + encodeURIComponent(j.p))).blob();  // langsung diambil: server menghapus pratinjau lama
+    if (n !== nomorAkurat) return;
+    const lama = $("still").src; $("still").src = URL.createObjectURL(blob); if (lama.startsWith("blob:")) URL.revokeObjectURL(lama);
+    $("still").hidden = $("stillCap").hidden = false; status("Warna akurat ditampilkan");
+  } catch (e) { if (n === nomorAkurat) status(e.message, true); }
+  $("bAkurat").disabled = false;
+}
+
+// ---------- Overlay teks di pemutar ----------
+function bersih(teks, huruf) {
+  if (huruf !== "subtitle") teks = teks.replace(/[.,;:]+$/, "");
+  return huruf === "kecil" ? teks.toLowerCase() : huruf === "kapital" ? teks.toUpperCase() : teks;
+}
+
+function potongKalimat(kt, maks) {  // seperti autoedit.potong_kalimat
+  const hasil = []; let cur = [];
+  kt.forEach((k, i) => {
+    cur.push(k);
+    if (cur.length >= maks || /[.,!?;:]$/.test(k.w) || (i + 1 < kt.length && kt[i + 1].s - k.e > 0.4)) { hasil.push(cur); cur = []; }
+  });
+  if (cur.length) hasil.push(cur);
+  return hasil;
+}
+
+function frasa() {  // frasa subtitle di timeline hasil: [{a, b, kata}]
+  if (frasaCache) return frasaCache;
+  if (!kata) return frasaCache = [];
+  const o = ukuranKeluar(), g = GAYA[P.gaya] || GAYA["hangat-kotak"], geser = [];
+  let total = 0;  // seperti autoedit.geser_waktu
+  P.potongan.forEach((s, i) => {
+    const c = kec(i);
+    for (const k of kata) if (s.mulai <= k.s && k.s <= s.selesai) geser.push({ w: k.w, s: (k.s - s.mulai) / c + total, e: (Math.min(k.e, s.selesai) - s.mulai) / c + total });
+    total += panjang(i);
+  });
+  const grup = potongKalimat(geser.filter(k => !PENGISI.test(k.w)), o.w > o.h ? Math.round(g.maks * 1.75) : g.maks);
+  return frasaCache = grup.map((p, i) => {
+    const a = p[0].s, huruf = p.reduce((n, k) => n + k.w.length + 1, 0);
+    let b = Math.min(Math.max(p[p.length - 1].e, a + Math.max(5 / 6, huruf / 17)), a + 7);
+    if (i + 1 < grup.length) { const nx = grup[i + 1][0].s; if (nx - b < 0.3) b = nx; b = Math.min(b, nx); }
+    return { a, b, kata: p.map(k => k.w) };
+  });
+}
+
+const gayaHook = () => ({ font: "Georgia", u: 88, c: P.gaya === "pop" ? MINT : "#fff", b: 1, i: 0, ...((GAYA[P.gaya] || {}).hook || {}) });
+
+function htmlJudul(teks, hk) {  // seperti isi_judul di buat_ass
+  const j = JUDUL[P.judul], js = j ? j[3] : 1;
+  const font = j ? `font-family:'${j[0]}',serif;font-style:${j[1] ? "italic" : "normal"};font-weight:${j[2] ? 700 : 400};` : "";
+  const k = teks.indexOf("|");
+  if (k >= 0) {
+    const fk = P.judul === "miring" ? "'Bodoni MT',serif;font-style:italic" : "'Segoe UI',sans-serif;font-style:normal";
+    return `<span style="font-family:${fk};font-weight:400;font-size:${hk.u * 0.7 * FS}px">${esc(bersih(teks.slice(0, k).trim(), "asli"))}</span><br>` +
+      `<span style="${font}font-size:${hk.u * 1.45 * js * FS}px">${esc(bersih(teks.slice(k + 1).trim(), "asli"))}</span>`;
+  }
+  return j ? `<span style="${font}font-size:${hk.u * js * FS}px">${esc(bersih(teks, "asli"))}</span>` : esc(bersih(teks, "asli"));
+}
+
+function letak(al, ml, mr, mv) {  // alignment ASS -> posisi CSS
+  let s = `left:${ml}px;right:${mr}px;text-align:${[7, 4, 1].includes(al) ? "left" : [9, 6, 3].includes(al) ? "right" : "center"};`;
+  if ([7, 8, 9].includes(al)) s += `top:${mv}px;`;
+  else if ([1, 2, 3].includes(al)) s += `bottom:${mv}px;`;
+  else s += "top:50%;transform:translateY(-50%);";
+  return s;
+}
+const bayang = (w, b) => `text-shadow:0 0 6px ${w},0 0 3px ${w},0 ${b}px ${b * 2}px rgba(0,0,0,.45);`;
+
+function bangunOverlay(hookOn, aktifEl, sub) {
+  const o = ukuranKeluar(), g = GAYA[P.gaya] || GAYA["hangat-kotak"], area = areaGambar(o), vert = o.h / o.w >= 1.7, sx = o.w / 1080;
+  const hk = gayaHook(), h = [];
+  const gayaTeksHook = `font-family:${hk.font},serif;font-size:${hk.u * FS}px;color:${hk.c};font-weight:${hk.b ? 700 : 400};font-style:${hk.i ? "italic" : "normal"};${bayang(COKLAT, 3)}`;
+  const posHook = area ? `bottom:${o.h - area.atas + 34}px;` : `top:${o.h * (vert ? 0.16 : 0.08)}px;`;
+  const kotakHook = (isi, extra) => `<span class="isi" ${extra} style="${gayaTeksHook}">${isi}</span>`;
+  if (hookOn) h.push(`<div class="pos" data-a="0" data-b="${P.durasi_hook}" data-fi=".25" data-fo=".3" style="left:80px;right:80px;text-align:center;${posHook}">` +
+    kotakHook(htmlJudul(P.hook.trim(), hk), 'data-hook="1"') + `</div>`);
+  if (sub) {
+    const mv = vert || g.align !== 2 ? g.mv : o.h * 0.07;
+    const pos = area && g.align === 2 ? `top:${area.bawah + 34}px;left:${g.ml * sx}px;right:${g.mr * sx}px;text-align:center;` : letak(g.align, g.ml * sx, g.mr * sx, mv);
+    const teks = sub.kata.map(w => bersih(w, g.huruf));
+    let isi;
+    if (g.efek === "aksen") {  // satu kata kunci (terpanjang, min. 5 huruf) serif miring kuning
+      const p = teks.reduce((m, w, n) => w.length > teks[m].length ? n : m, 0);
+      isi = teks.map((w, n) => n === p && w.length >= 5 ? `<i style="font-family:'${g.af}',serif;font-style:italic;color:${KUNING}">${esc(w)}</i>` : esc(w)).join(" ");
+    } else isi = teks.map(esc).join(" ");
+    if (g.kotak) isi = `<span style="background:rgba(24,16,20,.78);padding:4px 14px;border-radius:12px;box-decoration-break:clone;-webkit-box-decoration-break:clone">${isi}</span>`;
+    const bayangan = g.kotak ? "" : bayang(g.wo || "transparent", g.bayangan || 1);
+    h.push(`<div class="pos" data-a="${sub.a}" data-b="${sub.b}" data-fi=".15" data-fo=".15" style="${pos}"><span class="isi" data-sub="1" style="font-family:'${g.font}',sans-serif;font-size:${g.u * (vert ? 1.15 : 1) * FS}px;color:${g.c};` +
+      `font-weight:${g.b ? 700 : 400};font-style:${g.i ? "italic" : "normal"};line-height:1.5;${bayangan}">${isi}</span></div>`);
+  }
+  for (const i of aktifEl) {
+    const e = P.elemen[i], teks = e.teks.trim(), s = ELEMEN[e.jenis], cls = sel && sel.k === "el" && sel.i === i ? " pilih" : "";
+    const dat = `data-el="${i}"`;
+    let pos, isi, fi = 0.25, fo = 0.3, st;
+    if (e.jenis === "judul" || e.jenis === "penutup") {
+      const tengah = e.jenis === "penutup";
+      pos = tengah ? letak(5, 80, 80, 0) : `left:80px;right:80px;text-align:center;${posHook}`;
+      isi = htmlJudul(teks, hk); st = gayaTeksHook; if (tengah) { fi = 0.5; fo = 0; }
+    } else {
+      const mv = o.h * ({ label: vert ? .10 : .07, tanggal: vert ? .10 : .07, daftar: vert ? .24 : .12 }[e.jenis] || 0);
+      pos = letak(s.al, s.ml, s.ml, mv); fi = s.fi; fo = s.fo;
+      st = `font-family:${s.f},serif;font-size:${s.u * FS}px;color:${s.c};font-style:${s.i ? "italic" : "normal"};letter-spacing:${s.sp}px;${bayang(COKLAT, 2)}`;
+      if (e.jenis === "label") isi = `<span style="color:${KUNING}">—&nbsp; </span>${esc(teks.toUpperCase())}`;
+      else if (e.jenis === "tanggal") isi = esc(teks.toUpperCase());
+      else if (e.jenis === "kutipan") isi = `“${esc(teks.replace(/^[\s"'“”]+|[\s"'“”]+$/g, ""))}”`;
+      else if (e.jenis === "daftar") {
+        const m = /^(\d+)\.?\s+([\s\S]*)$/.exec(teks);
+        isi = m ? `<span style="color:${KUNING}">${String(+m[1]).padStart(2, "0")}&nbsp; </span>${esc(m[2])}` : esc(teks);
+      } else isi = esc(teks);
+    }
+    h.push(`<div class="pos" data-a="${e.mulai}" data-b="${e.selesai}" data-fi="${fi}" data-fo="${fo}" style="${pos}"><span class="isi${cls}" ${dat} style="${st}">${isi}</span></div>`);
+  }
+  $("ov").innerHTML = h.join("");
+}
+
+function gambarOverlay() {
+  if (!P || !siap) return;
+  const aktifEl = [];
+  P.elemen.forEach((e, i) => { if ((e.teks || "").trim() && e.selesai > e.mulai && t >= e.mulai && t <= e.selesai) aktifEl.push(i); });
+  const hookOn = !!P.hook.trim() && t < P.durasi_hook;
+  const fr = P.subtitle ? frasa() : [], ip = fr.findIndex(f => t >= f.a && t < f.b);
+  const kunci = [hookOn, aktifEl.join(), ip, sel && sel.k === "el" ? sel.i : -1].join("|");
+  if (kunci !== kunciOv) { kunciOv = kunci; bangunOverlay(hookOn, aktifEl, ip >= 0 ? fr[ip] : null); }
+  for (const n of $("ov").children) {  // fade masuk/keluar seperti \fad di render
+    const a = +n.dataset.a, b = +n.dataset.b, fi = +n.dataset.fi, fo = +n.dataset.fo;
+    n.style.opacity = main ? Math.max(0, Math.min(1, fi ? (t - a) / fi : 1, fo ? (b - t) / fo : 1)) : 1;  // saat dijeda tampil penuh
+  }
+}
+$("ov").addEventListener("click", e => {
+  const n = e.target.closest("[data-el]");
+  if (n) pilih("el", +n.dataset.el); else if (e.target.closest("[data-hook],[data-sub]")) bukaTab("teks");
+});
+
+// ---------- Memuat media ----------
+function muatVideo(v) {
+  const n = ++nomorVideo;
+  siap = false; strip = null; autoNilai = null; jeda();
+  const src = `/file?p=${encodeURIComponent(v)}&v=${verMedia}`;
+  V.forEach(x => { x.src = src; x.load(); });
+  V[0].addEventListener("loadedmetadata", () => {
+    if (n !== nomorVideo) return;
+    const baru = !P.potongan.length && !P.elemen.length && !P.pro;  // video mentah: langsung diedit otomatis
+    dur = Math.floor(V[0].duration * 100) / 100; srcW = V[0].videoWidth || 9; srcH = V[0].videoHeight || 16;
+    P.potongan = P.potongan.map(s => ({ ...s, mulai: clamp(s.mulai, 0, dur), selesai: clamp(s.selesai, 0, dur), zoom: clamp(s.zoom, 1, 1.2) }))
+      .filter(s => s.selesai - s.mulai > 0.05);
+    if (!P.potongan.length) P.potongan = [{ mulai: 0, selesai: dur, zoom: 1 }];
+    siap = true; hitung();
+    $("frame").classList.remove("kosong"); $("tarik").hidden = true;
+    ["bPutar", "bPro", "bEO", "bCapcut", "bExport"].forEach(id => $(id).disabled = false); tombolGaya();
+    pxs = clamp(($("tlgulung").clientWidth - 84 - 60) / Math.max(TL.total, 1), 8, 300); $("zoomTL").value = pxs;
+    setelahUbah(0); isiMedia(); muatStrip(v, n); ukurAuto(v, n);
+    if (baru) editPro();
+  }, { once: true });
+  V[0].addEventListener("error", () => { if (n === nomorVideo) status("Video ini tidak bisa diputar di browser", true); }, { once: true });
+}
+
+async function muatStrip(v, n) {  // deretan thumbnail untuk video di timeline
+  try {
+    const jum = clamp(Math.round(dur * 1.5), 20, 120);
+    const j = await api(`/strip?video=${encodeURIComponent(v)}&n=${jum}&tinggi=72`);
+    if (n !== nomorVideo) return;
+    const img = new Image(); img.src = `/file?p=${encodeURIComponent(j.p)}&v=${verMedia}`;
+    await img.decode();
+    if (n !== nomorVideo) return;
+    strip = { n: j.n, fw: img.naturalWidth / j.n, fh: img.naturalHeight };
+    $("tlinner").style.setProperty("--strip", `url("${img.src}")`); jadwalTL();
+  } catch (e) { /* tanpa thumbnail timeline tetap bisa dipakai */ }
+}
+
+function ukurAuto(v, n) {  // koreksi warna otomatis diukur di latar belakang
+  autoP = api("/otomatis", { video: v }).then(a => {
+    if (n !== nomorVideo) return null;
+    autoNilai = a; $("bAuto").disabled = false;
+    if (perluAuto) { perluAuto = false; P.atur = { ...nol(), ...a }; setelahUbah(); }
+    return a;
+  }).catch(e => { if (n === nomorVideo) status(e.message, true); return null; });
+}
+
+const kunciKata = () => stem(P.sumber[0]) + (P.audio ? "." + stem(P.audio) : "");
+function resetKata() {  // media berubah: transkrip lama tidak berlaku; "Buat subtitle" langsung selesai kalau sudah pernah dibuat
+  nomorKata++; kata = null; sedangSub = false; frasaCache = null; kunciOv = ""; tombolSub(); jadwalTL(); gambarOverlay();
+}
+
+async function buatSubtitle() {
+  if (!P || !siap || sedangSub) return;
+  const n = ++nomorKata; sedangSub = true; tombolSub();
+  try {
+    const r = await tunggu((await api("/transkrip", { video: P.sumber[0], audio: P.audio })).id, b => { if (n === nomorKata) status(b); });
+    if (n !== nomorKata) return;
+    kata = r.kata; frasaCache = null; kunciOv = ""; status(`Subtitle siap (${kata.length} kata)`);
+  } catch (e) { if (n === nomorKata) status(e.message, true); }
+  if (n === nomorKata) { sedangSub = false; frasaCache = null; kunciOv = ""; tombolSub(); jadwalTL(); gambarOverlay(); }
+}
+function tombolSub() {
+  $("bBuatSub").disabled = !siap || sedangSub; $("bHening").disabled = !kata;
+  $("bBuatSub").textContent = sedangSub ? "Membuat subtitle…" : kata ? "Buat ulang" : "Buat subtitle";
+}
+
+function sinkronMedia() {  // dipanggil setiap P berganti (termasuk urungkan): muat ulang yang berubah saja
+  const v = P.sumber[0];
+  if (v !== dimuat.video) { dimuat.video = v; muatVideo(v); }
+  if (kunciKata() !== dimuat.kata) { dimuat.kata = kunciKata(); resetKata(); }
+  isiMedia();
+}
+
+function isiMedia() {
+  $("nVideo").textContent = P ? P.sumber[0] : "belum ada";
+  $("nAudio").textContent = P && P.audio || "opsional"; $("nMusik").textContent = P && P.musik ? namaMusik() : "opsional";
+  $("lAudio").hidden = !(P && P.audio); $("lMusik").hidden = !(P && P.musik);
+  $("infoMedia").textContent = P && siap ? `Durasi video asli ${fmt(dur)} · hasil edit ${fmt(TL.total)}` : "";
+  judulProyek();
+}
+
+// ---------- Unggah ----------
+function unggah(f, jenis) {
+  return new Promise((ok, gagal) => {
+    const x = new XMLHttpRequest(), tulis = teks => { $({ video: "nVideo", audio: "nAudio", musik: "nMusik" }[jenis]).textContent = teks; };
+    x.open("POST", `/unggah?jenis=${jenis}&nama=${encodeURIComponent(f.name)}`);
+    x.upload.onprogress = e => tulis(`memuat ${Math.round(e.loaded / e.total * 100)}%`);
+    x.onload = () => { try { const r = JSON.parse(x.responseText); r.galat ? gagal(new Error(r.galat)) : ok(r); } catch (e) { gagal(e); } };
+    x.onerror = () => gagal(new Error("gagal memuat file"));
+    x.send(f);
+  });
+}
+
+async function pakaiFile(f, jenis) {
+  if (!f) return;
+  if (jenis !== "video" && !P) { status("Pilih video dulu", true); return; }
+  if (jenis === "video" && P && !confirm("Mengganti video akan mengatur ulang timeline (potongan dan teks). Lanjutkan?")) return;
+  status(`Memuat ${f.name}…`);
+  try {
+    const j = await unggah(f, jenis);
+    verMedia = Date.now();
+    if (jenis === "video") {
+      if (!j.durasi) throw new Error("Editor ini hanya untuk video, bukan foto");
+      if (P) { catat("video"); const lama = P; P = { ...lama, sumber: [j.p], potongan: [], elemen: [] }; dimuat.video = null; }
+      else { P = proyekBaru(j.p); namaProyek = null; }
+      dimuat.kata = null; sel = null; t = 0;
+    } else { catat("media"); P[jenis] = j.p; }
+    sinkronMedia(); if (jenis !== "video") setelahUbah();
+    jadwalSimpan(); status(`${f.name} siap`);
+  } catch (e) { status(e.message, true); isiMedia(); }
+}
+document.querySelectorAll("input[data-jenis]").forEach(inp => inp.addEventListener("change", () => {
+  const f = inp.files[0]; inp.value = ""; pakaiFile(f, inp.dataset.jenis);
+}));
+[["lAudio", "audio"], ["lMusik", "musik"]].forEach(([id, k]) => $(id).addEventListener("click", e => {
+  e.preventDefault(); e.stopPropagation(); edit("media", () => { P[k] = null; }); sinkronMedia(); jadwalSimpan();
+}));
+addEventListener("dragover", e => { e.preventDefault(); $("tarik").classList.add("nyala"); });
+addEventListener("dragleave", e => { if (!e.relatedTarget) $("tarik").classList.remove("nyala"); });
+addEventListener("drop", e => {
+  e.preventDefault(); $("tarik").classList.remove("nyala");
+  const f = [...e.dataTransfer.files].find(x => x.type.startsWith("video/"));
+  if (f) pakaiFile(f, "video"); else status("Tarik file video", true);
+});
+
+// ---------- Timeline: gambar ----------
+let tlTunggu = false;
+function jadwalTL() { if (!tlTunggu) { tlTunggu = true; requestAnimationFrame(() => { tlTunggu = false; gambarTL(); }); } }
+
+function lajurTeks() {  // tiap teks dapat baris sendiri kalau waktunya bertumpuk
+  const urut = P.elemen.map((e, i) => i).sort((a, b) => P.elemen[a].mulai - P.elemen[b].mulai), akhir = [], hasil = {};
+  for (const i of urut) {
+    let l = akhir.findIndex(a => a <= P.elemen[i].mulai + 1e-6);
+    if (l < 0) { l = akhir.length; akhir.push(0); }
+    akhir[l] = P.elemen[i].selesai; hasil[i] = l;
+  }
+  return { hasil, n: Math.max(1, akhir.length) };
+}
+
+function penggaris(lebar) {
+  const langkah = [0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600].find(s => s * pxs >= 70) || 600;
+  const bagi = langkah * pxs / 5 >= 8 ? 5 : 1;
+  let h = "";
+  for (let i = 0; i * langkah <= lebar; i++) {
+    const d = i * langkah;
+    h += `<div class="tik besar" style="left:${d * pxs}px"><i>${langkah < 1 ? fmt(d) : fmtMenit(d)}</i></div>`;
+    if (bagi > 1) for (let j = 1; j < bagi; j++) h += `<div class="tik" style="left:${(d + langkah * j / bagi) * pxs}px"></div>`;
+  }
+  return h;
+}
+
+function gambarTL() {
+  if (!P || !siap) { $("tlisi").innerHTML = ""; return; }
+  $("kepala").hidden = false;
+  const ujung = Math.max(TL.total, ...P.elemen.map(e => e.selesai)), lebar = ujung + 5, W = lebar * pxs;
+  const BLOK_H = 50, tw = strip ? Math.max(8, strip.fw * BLOK_H / strip.fh) : 0;
+  if (strip) $("tlinner").style.setProperty("--bs", strip.n * tw + "px");
+  const baris = (nm, tinggi, isi, ekstra = "") =>
+    `<div class="baris" style="height:${tinggi}px"><div class="nama">${nm}</div><div class="lintasan ${ekstra}" style="width:${W}px">${isi}</div></div>`;
+  const tepi = '<b class="tepi kiri" data-tepi="kiri"></b><b class="tepi kanan" data-tepi="kanan"></b>';
+  const adaSel = (k, i) => sel && sel.k === k && sel.i === i ? " sel" : "";
+
+  const seg = P.potongan.map((s, i) => {
+    const w = panjang(i) * pxs;
+    let ubin = "";
+    if (strip) for (let j = 0, nT = Math.ceil(w / tw); j < nT; j++) {
+      const f = clamp(Math.floor((s.mulai + (j + .5) * tw / pxs) / dur * strip.n), 0, strip.n - 1);
+      ubin += `<i class="u" style="left:${j * tw}px;width:${tw}px;background-position:${-f * tw}px 0"></i>`;
+    }
+    return `<div class="blok seg${adaSel("seg", i)}" data-k="seg" data-i="${i}" style="left:${TL.off[i] * pxs}px;width:${w}px">${ubin}` +
+      `<span class="et">${i + 1} · ${panjang(i).toFixed(1)}s${s.zoom > 1.001 ? " · " + s.zoom.toFixed(2) + "x" : ""}${kec(i) !== 1 ? " · " + kec(i) + "×" : ""}${s.efek ? " · " + (info.efek[s.efek] || s.efek) : ""}</span>${tepi}</div>`;
+  }).join("");
+
+  const { hasil: lajur, n: nL } = lajurTeks();
+  const teks = P.elemen.map((e, i) => `<div class="blok teks${adaSel("el", i)}" data-k="el" data-i="${i}" style="left:${e.mulai * pxs}px;width:${(e.selesai - e.mulai) * pxs}px;` +
+    `top:${3 + lajur[i] * 26}px;bottom:auto;height:23px"><span class="et">${esc(JENIS[e.jenis])}: ${esc(e.teks)}</span>${tepi}</div>`).join("") +
+    (P.elemen.length ? "" : '<span class="petunjukTL">Belum ada teks. Tekan "+ Teks" untuk menambah.</span>');
+
+  const sub = kata ? frasa().map(f => `<div class="blok sub${P.subtitle ? "" : " mati"}" style="left:${f.a * pxs}px;width:${Math.max(2, (f.b - f.a) * pxs)}px"><span class="et">${esc(f.kata.join(" "))}</span></div>`).join("")
+    : '<span class="petunjukTL">Belum ada subtitle. Tekan "Buat subtitle".</span>';
+  const lagu = P.musik ? `<div class="blok lagu" style="left:0;width:${TL.total * pxs}px"><span class="et">♪ ${esc(namaMusik())}</span></div>`
+    : '<span class="petunjukTL">Tidak ada musik. Tambahkan di panel Media.</span>';
+
+  $("tlisi").innerHTML = baris("", 26, penggaris(lebar), "penggaris") + baris("Video", 58, seg) + baris("Teks", 6 + nL * 26, teks) +
+    baris("Subtitle", 30, sub) + baris("Musik", 30, lagu);
+  $("tlinner").style.width = 84 + W + "px";
+  $("kepala").style.left = 84 + t * pxs + "px";
+}
+
+function tandaiSel() {
+  document.querySelectorAll("#tlisi .blok[data-k]").forEach(b => b.classList.toggle("sel", !!sel && b.dataset.k === sel.k && +b.dataset.i === sel.i));
+}
+function pilih(k, i, buka = true) {
+  sel = k ? { k, i } : null; kunciOv = ""; tandaiSel(); isiItem(); gambarOverlay();
+  if (k && buka) bukaTab("item");
+}
+
+// ---------- Timeline: interaksi ----------
+const xKeWaktu = ev => (ev.clientX - $("tlinner").getBoundingClientRect().left - 84) / pxs;
+
+function seret(e, gerak, selesai) {  // seret dengan pointer; pendengar di window supaya tahan gambar ulang
+  const x0 = e.clientX; let jalan = false;
+  const m = ev => { const dx = ev.clientX - x0; if (!jalan && Math.abs(dx) < 3) return; jalan = true; gerak(dx, ev); };
+  const u = ev => {
+    removeEventListener("pointermove", m); removeEventListener("pointerup", u); removeEventListener("pointercancel", u);
+    selesai(jalan, ev);
+  };
+  addEventListener("pointermove", m); addEventListener("pointerup", u); addEventListener("pointercancel", u);
+  e.preventDefault();
+}
+
+// snapping: tepi blok menempel ke playhead dan tepi lain bila jaraknya di bawah ~6 px
+function snap(x, sasaran) {
+  let terbaik = null, jarak = 6 / pxs;
+  for (const s of sasaran) if (Math.abs(s - x) <= jarak) { terbaik = s; jarak = Math.abs(s - x); }
+  const g = $("snapGaris");
+  g.hidden = terbaik === null; if (terbaik !== null) g.style.left = 84 + terbaik * pxs + "px";
+  return terbaik;
+}
+const tepiSeg = () => TL.off.flatMap((o, i) => [o, o + panjang(i)]);
+const tepiEl = lewati => P.elemen.flatMap((e, i) => i === lewati ? [] : [e.mulai, e.selesai]);
+const hilangSnap = () => { $("snapGaris").hidden = true; };
+
+$("tlinner").addEventListener("pointerdown", e => {
+  if (e.button !== 0 || e.target.closest(".nama")) return;
+  const blok = e.target.closest("[data-k]");
+  if (!blok) return mulaiScrub(e);
+  const k = blok.dataset.k, i = +blok.dataset.i;
+  pilih(k, i);
+  const tepi = e.target.closest("[data-tepi]");
+  if (tepi) return k === "seg" ? trimSeg(e, i, tepi.dataset.tepi) : ubahEl(e, i, tepi.dataset.tepi);
+  if (k === "seg") urutSeg(e, i); else ubahEl(e, i, "tengah");
+});
+
+function mulaiScrub(e) {  // klik/seret di penggaris atau area kosong = geser playhead
+  if (!e.target.closest(".penggaris")) pilih(null);
+  pergi(xKeWaktu(e));
+  seret(e, (dx, ev) => pergi(xKeWaktu(ev)), () => {});
+}
+
+function trimSeg(e, i, sisi) {  // seret tepi potongan untuk memendekkan/memanjangkan
+  const s0 = { ...P.potongan[i] }, off = TL.off[i], kunci = "trim" + (++nomorSeret); let catatan = false;
+  seret(e, dx => {
+    if (!catatan) { catat(kunci); catatan = true; }
+    const s = P.potongan[i]; let tujuan;
+    if (sisi === "kiri") { s.mulai = r2(clamp(s0.mulai + dx / pxs, 0, s0.selesai - MIN_POTONG)); tujuan = off; }
+    else {
+      let akhir = clamp(s0.selesai + dx / pxs, s0.mulai + MIN_POTONG, dur);
+      const sn = snap(off + akhir - s0.mulai, [t, ...tepiEl(-1)]);
+      if (sn !== null) akhir = clamp(s0.mulai + sn - off, s0.mulai + MIN_POTONG, dur);
+      s.selesai = r2(akhir); tujuan = off + panjang(i) - 0.03;
+    }
+    setelahUbah(tujuan);  // video menampilkan frame di tepi yang sedang digeser
+  }, hilangSnap);
+}
+
+function urutSeg(e, i) {  // seret potongan untuk mengubah urutan; klik biasa = pindahkan playhead
+  let tujuan = i;
+  const blok = e.target.closest(".blok");
+  seret(e, dx => {
+    blok.classList.add("seret"); blok.style.transform = `translateX(${dx}px)`;
+    const pusat = TL.off[i] + panjang(i) / 2 + dx / pxs, lain = P.potongan.map((s, j) => j).filter(j => j !== i);
+    tujuan = lain.filter(j => TL.off[j] + panjang(j) / 2 < pusat).length;
+    const x = tujuan < lain.length ? TL.off[lain[tujuan]] : TL.off[lain[lain.length - 1]] + panjang(lain[lain.length - 1]);
+    const m = $("sisip"); m.hidden = false; Object.assign(m.style, { left: 84 + x * pxs - 1 + "px", top: "28px", height: "58px" });
+  }, (jalan, ev) => {
+    $("sisip").hidden = true;
+    if (!jalan) { pergi(xKeWaktu(ev)); return; }
+    if (tujuan === i) { jadwalTL(); return; }
+    edit("urut", () => { const [s] = P.potongan.splice(i, 1); P.potongan.splice(tujuan, 0, s); sel = { k: "seg", i: tujuan }; });
+    setelahUbah(TL.off[tujuan]);
+  });
+}
+
+function ubahEl(e, i, sisi) {  // geser teks, atau ubah waktu muncul/hilang lewat tepinya
+  const e0 = { ...P.elemen[i] }, len = e0.selesai - e0.mulai, kunci = "el" + (++nomorSeret); let catatan = false;
+  const batas = Math.max(TL.total, e0.selesai);
+  seret(e, dx => {
+    if (!catatan) { catat(kunci); catatan = true; }
+    const el = P.elemen[i], d = dx / pxs, sasaran = [t, ...tepiSeg(), TL.total, 0, ...tepiEl(i)];
+    if (sisi === "kiri") {
+      let m = clamp(e0.mulai + d, 0, e0.selesai - MIN_POTONG); const sn = snap(m, sasaran);
+      if (sn !== null) m = clamp(sn, 0, e0.selesai - MIN_POTONG);
+      el.mulai = r2(m);
+    } else if (sisi === "kanan") {
+      let b = clamp(e0.selesai + d, e0.mulai + MIN_POTONG, batas); const sn = snap(b, sasaran);
+      if (sn !== null) b = clamp(sn, e0.mulai + MIN_POTONG, batas);
+      el.selesai = r2(b);
+    } else {
+      let m = clamp(e0.mulai + d, 0, Math.max(0, batas - len));
+      const a = snap(m, sasaran), b = a === null ? snap(m + len, sasaran) : null;  // awal atau akhir blok yang menempel
+      if (a !== null) m = a; else if (b !== null) m = b - len;
+      el.mulai = r2(m); el.selesai = r2(m + len);
+    }
+    setelahUbah();
+  }, jalan => { hilangSnap(); if (!jalan && (t < e0.mulai || t > e0.selesai)) pergi(e0.mulai); });  // klik: tampilkan teks di pemutar
+}
+
+// zoom timeline: slider, tombol Pas, dan Ctrl + roda mouse (waktu di bawah kursor tetap di tempatnya)
+function aturZoom(baru, jangkar) {
+  const g = $("tlgulung"), waktu = (g.scrollLeft + jangkar) / pxs;
+  pxs = clamp(baru, 8, 300); $("zoomTL").value = pxs;
+  gambarTL(); g.scrollLeft = waktu * pxs - jangkar; segarWaktu();
+}
+$("zoomTL").addEventListener("input", e => aturZoom(+e.target.value, $("tlgulung").clientWidth / 2));
+$("bPas").onclick = () => { aturZoom(($("tlgulung").clientWidth - 84 - 60) / Math.max(TL.total, 1), 0); $("tlgulung").scrollLeft = 0; };
+$("tlgulung").addEventListener("wheel", e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  aturZoom(pxs * Math.exp(-e.deltaY * 0.0015), e.clientX - $("tlgulung").getBoundingClientRect().left - 84);
+}, { passive: false });
+
+// ---------- Aksi edit ----------
+function pisah() {
+  if (!siap) return;
+  const { i, src } = cariSeg(t), s = P.potongan[i];
+  if (src - s.mulai < 0.1 || s.selesai - src < 0.1) { status("Taruh playhead di tengah potongan dulu", true); return; }
+  edit("pisah", () => { P.potongan.splice(i, 1, { ...s, selesai: r2(src) }, { ...s, mulai: r2(src) }); sel = { k: "seg", i: i + 1 }; }, true);
+}
+function hapusPilihan() {
+  if (!sel) return;
+  if (sel.k === "seg") {
+    if (P.potongan.length < 2) { status("Minimal harus ada satu potongan", true); return; }
+    edit("hapus", () => { P.potongan.splice(sel.i, 1); sel = null; }, true);
+  } else edit("hapus", () => { P.elemen.splice(sel.i, 1); sel = null; });
+}
+function gandaPilihan() {
+  if (!sel) return;
+  if (sel.k === "seg") edit("ganda", () => { P.potongan.splice(sel.i + 1, 0, { ...P.potongan[sel.i] }); sel = { k: "seg", i: sel.i + 1 }; }, true);
+  else edit("ganda", () => {
+    const e = P.elemen[sel.i], len = e.selesai - e.mulai;
+    P.elemen.push({ ...e, mulai: r2(e.mulai + 0.5), selesai: r2(e.mulai + 0.5 + len) }); sel = { k: "el", i: P.elemen.length - 1 };
+  });
+}
+function tambahTeks() {
+  if (!siap) return;
+  const mulai = clamp(t, 0, Math.max(0, TL.total - 0.5));
+  edit("tambahTeks", () => {
+    P.elemen.push({ jenis: "label", teks: "Teks baru", mulai: r2(mulai), selesai: r2(Math.min(mulai + 3, Math.max(TL.total, mulai + MIN_POTONG))) });
+    sel = { k: "el", i: P.elemen.length - 1 };
+  });
+  bukaTab("item"); $("eTeks").focus(); $("eTeks").select();
+}
+function potongHening() {
+  if (!kata) return;
+  const bag = bagianDipakai(kata, dur).filter(([a, b]) => b - a > 0.1);
+  if (!bag.length) { status("Tidak ada bagian yang bersuara", true); return; }
+  edit("hening", () => { P.potongan = bag.map(([a, b]) => ({ mulai: r2(a), selesai: r2(Math.min(b, dur)), zoom: 1 })); sel = null; }, 0);
+  status(`Bagian hening dibuang: ${bag.length} potongan, ${fmt(TL.total)} dari ${fmt(dur)}`);
+}
+function bagianDipakai(kt, durasi, jeda = 0.5, pad = 0.12) {  // seperti autoedit.bagian_dipakai
+  if (!kt.length) return [[0, durasi]];
+  const bag = [];
+  for (const k of kt) {
+    const a = Math.max(0, k.s - pad), b = Math.min(durasi, k.e + pad);
+    if (bag.length && a - bag[bag.length - 1][1] <= jeda) bag[bag.length - 1][1] = Math.max(bag[bag.length - 1][1], b); else bag.push([a, b]);
+  }
+  return bag;
+}
+
+// ---------- Panel kanan ----------
+function bukaTab(hal) {
+  document.querySelectorAll(".tab button").forEach(b => b.classList.toggle("aktif", b.dataset.hal === hal));
+  document.querySelectorAll(".halaman").forEach(h => h.classList.toggle("aktif", h.id === "h-" + hal));
+}
+document.querySelectorAll(".tab button").forEach(b => b.onclick = () => bukaTab(b.dataset.hal));
+
+const isiOpsi = (sel_, obj, kosong) => {
+  sel_.innerHTML = (kosong ? `<option value="">${kosong}</option>` : "") + Object.keys(obj).map(k => `<option value="${k}">${k}</option>`).join("");
+};
+const setNilai = (id, v) => { const x = $(id); if (document.activeElement !== x) x.value = v; };
+
+function bangunPanel() {
+  isiOpsi($("gaya"), info.gaya); isiOpsi($("warna"), info.warna, "ikut gaya teks"); isiOpsi($("judul"), info.judul, "ikut gaya teks");
+  $("eJenis").innerHTML = Object.entries(JENIS).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+  $("pRasio").innerHTML = info.rasio.map(r => `<button class="pil" data-r="${r}">${r === "asli" ? "Ukuran asli" : r}</button>`).join("");
+  $("geser").innerHTML = info.atur.map(k => `<div class="geser"><span>${LABEL[k]}</span>
+    <input type="range" id="a_${k}" min="${minGeser(k)}" max="100" value="0"><output id="o_${k}">0</output></div>`).join("");
+  $("templat").innerHTML = Object.entries(info.template).map(([n, tp]) => `<button data-t="${esc(n)}" title="${esc(tp.desk || "")}">${esc(n)}</button>`).join("");
+
+  $("gaya").onchange = () => { tplAktif = null; edit("gaya", () => { P.gaya = $("gaya").value; }); };
+  $("warna").onchange = () => { tplAktif = null; edit("warna", () => { P.warna = $("warna").value; }); };
+  $("judul").onchange = () => { tplAktif = null; edit("judul", () => { P.judul = $("judul").value; }); };
+  $("hook").oninput = () => edit("hook", () => { P.hook = $("hook").value; });
+  $("subtitle").onchange = $("subtitle2").onchange = e => edit("subtitle", () => { P.subtitle = e.target.checked; });
+  info.atur.forEach(k => $("a_" + k).addEventListener("input", e => {
+    tplAktif = null; edit("atur_" + k, () => { P.atur[k] = +e.target.value; });
+  }));
+  $("pRasio").onclick = e => { const b = e.target.closest("[data-r]"); if (b) edit("rasio", () => { P.rasio = b.dataset.r; }); };
+  $("pBingkai").onclick = e => { const b = e.target.closest("[data-b]"); if (b) edit("bingkai", () => { P.bingkai = b.dataset.b; }); };
+  $("templat").onclick = e => { const b = e.target.closest("[data-t]"); if (b) pakaiTemplat(b.dataset.t); };
+  $("bAuto").onclick = async () => {
+    if (!siap) return;
+    const n = ++nomorTpl, a = await autoP; if (!a || n !== nomorTpl) return;
+    tplAktif = null; edit("auto", () => { P.atur = { ...nol(), ...a }; }); status("Koreksi warna otomatis diterapkan");
+  };
+  $("bReset").onclick = () => { tplAktif = null; edit("reset", () => { P.atur = nol(); }); };
+
+  // properti potongan terpilih
+  $("sMulai").onchange = () => edit("sMulai", () => {
+    const s = P.potongan[sel.i], v = +$("sMulai").value; if (!isNaN(v)) s.mulai = r2(clamp(v, 0, s.selesai - MIN_POTONG));
+  }, true);
+  $("sSelesai").onchange = () => edit("sSelesai", () => {
+    const s = P.potongan[sel.i], v = +$("sSelesai").value; if (!isNaN(v)) s.selesai = r2(clamp(v, s.mulai + MIN_POTONG, dur));
+  }, true);
+  $("sZoom").oninput = () => edit("zoom", () => { P.potongan[sel.i].zoom = +$("sZoom").value; }, true);
+  $("sKec").oninput = () => edit("kec", () => { const v = +$("sKec").value; if (v === 1) delete P.potongan[sel.i].kecepatan; else P.potongan[sel.i].kecepatan = v; }, true);
+  $("sEfek").innerHTML = Object.entries(info.efek).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+  $("sTrans").innerHTML = Object.entries(info.transisi).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+  $("sEfek").onchange = () => edit("efek", () => { const v = $("sEfek").value; if (v) P.potongan[sel.i].efek = v; else delete P.potongan[sel.i].efek; }, true);
+  $("sTrans").onchange = () => edit("trans", () => { P.potongan[sel.i].transisi = $("sTrans").value; }, true);
+  $("volSuara").oninput = () => edit("volSuara", () => { P.volume_suara = +$("volSuara").value / 100; });
+  $("volMusik").oninput = () => edit("volMusik", () => { P.volume_musik = +$("volMusik").value / 100; });
+  $("sPisah").onclick = pisah; $("sGanda").onclick = gandaPilihan; $("sHapus").onclick = hapusPilihan;
+  // properti teks terpilih
+  $("eJenis").onchange = () => edit("eJenis", () => { P.elemen[sel.i].jenis = $("eJenis").value; });
+  $("eTeks").oninput = () => edit("eTeks", () => { P.elemen[sel.i].teks = $("eTeks").value; });
+  $("eMulai").onchange = () => edit("eMulai", () => {
+    const e = P.elemen[sel.i], v = +$("eMulai").value; if (!isNaN(v)) e.mulai = r2(clamp(v, 0, e.selesai - MIN_POTONG));
+  });
+  $("eSelesai").onchange = () => edit("eSelesai", () => {
+    const e = P.elemen[sel.i], v = +$("eSelesai").value; if (!isNaN(v)) e.selesai = r2(Math.max(v, e.mulai + MIN_POTONG));
+  });
+  $("eGanda").onclick = gandaPilihan; $("eHapus").onclick = hapusPilihan;
+  $("bSrt").onclick = simpanSrt;
+}
+
+function simpanSrt() {  // subtitle di timeline hasil (sudah ikut potongan dan kecepatan)
+  const fr = P && kata ? frasa() : [];
+  if (!fr.length) { status('Belum ada subtitle. Tekan "Buat subtitle" di timeline dulu.', true); return; }
+  const w = d => { const ms = Math.round(d * 1000), j = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60;
+    return `${String(j).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")},${String(ms % 1000).padStart(3, "0")}`; };
+  const isi = fr.map((f, i) => `${i + 1}\n${w(f.a)} --> ${w(f.b)}\n${f.kata.join(" ").trim()}\n`).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([isi], { type: "text/plain" })); a.download = stem(P.sumber[0]) + ".srt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  status(`Subtitle disimpan: ${fr.length} baris`);
+}
+
+async function pakaiTemplat(nm) {  // template = gaya + warna + font + (koreksi otomatis + selisih template), dibatasi rentang slider
+  const tp = info.template[nm], n = ++nomorTpl;
+  if (!tp || !P || !siap) return;
+  let auto = null;
+  if (!tp.tanpa_auto) {
+    if (!autoNilai) status("Mengukur warna video…");
+    auto = await autoP; if (n !== nomorTpl) return;
+  }
+  edit("templat", () => {
+    P.gaya = tp.gaya; P.warna = tp.warna || ""; P.judul = tp.judul || "";
+    P.atur = Object.fromEntries(info.atur.map(k => [k, clamp(Math.round(((auto || {})[k] || 0) + ((tp.atur || {})[k] || 0)), minGeser(k), 100)]));
+  });
+  tplAktif = nm; isiPanel(); status(`Template ${nm} dipakai`);
+}
+
+function isiPanel() {
+  if (!P) return;
+  $("gaya").value = P.gaya; $("dGaya").textContent = info.gaya[P.gaya] || "";
+  setNilai("hook", P.hook); $("judul").value = P.judul; $("dJudul").textContent = P.judul ? info.judul[P.judul] || "" : "pakai font bawaan gaya teks";
+  $("subtitle").checked = $("subtitle2").checked = P.subtitle;
+  $("warna").value = P.warna; $("dWarna").textContent = P.warna ? info.warna[P.warna] || "" : "pakai warna bawaan gaya teks";
+  info.atur.forEach(k => { setNilai("a_" + k, P.atur[k]); $("o_" + k).textContent = P.atur[k]; });
+  document.querySelectorAll("#templat button").forEach(b => b.classList.toggle("aktif", b.dataset.t === tplAktif));
+  document.querySelectorAll("#pRasio .pil").forEach(b => b.classList.toggle("aktif", b.dataset.r === P.rasio));
+  document.querySelectorAll("#pBingkai .pil").forEach(b => b.classList.toggle("aktif", b.dataset.b === P.bingkai));
+  setNilai("volSuara", Math.round(P.volume_suara * 100)); $("oVolSuara").textContent = Math.round(P.volume_suara * 100);
+  setNilai("volMusik", Math.round(P.volume_musik * 100)); $("oVolMusik").textContent = Math.round(P.volume_musik * 100);
+  isiItem(); isiMedia();
+}
+
+function isiItem() {
+  const s = P && sel && sel.k === "seg" ? P.potongan[sel.i] : null, e = P && sel && sel.k === "el" ? P.elemen[sel.i] : null;
+  $("itKosong").hidden = !!(s || e); $("itSeg").hidden = !s; $("itEl").hidden = !e;
+  if (s) {
+    $("itSegNo").textContent = `Potongan video ${sel.i + 1} dari ${P.potongan.length}`;
+    setNilai("sMulai", s.mulai); setNilai("sSelesai", s.selesai);
+    $("sInfo").textContent = `Panjang ${panjang(sel.i).toFixed(2)} detik di hasil. Video asli ${fmt(dur)}.`;
+    setNilai("sZoom", s.zoom); $("oZoom").textContent = s.zoom.toFixed(2);
+    setNilai("sKec", kec(sel.i)); $("oKec").textContent = kec(sel.i);
+    $("sEfek").value = s.efek || ""; $("sTrans").value = s.transisi || "potong"; $("sTrans").disabled = sel.i === 0;
+  }
+  if (e) {
+    $("eJenis").value = e.jenis; setNilai("eTeks", e.teks); setNilai("eMulai", e.mulai); setNilai("eSelesai", e.selesai);
+    $("eBantu").textContent = BANTU_JENIS[e.jenis] || "";
+  }
+}
+
+// ---------- Gaya edit sekali klik: warna + font + transisi + ritme zoom sekaligus ----------
+// Transisi hanya di pergantian bagian cerita (seperti pro.transisi_halus); jump cut biasa tetap dipotong langsung.
+const GAYA_EDIT = {
+  "Bersih": { templat: "Vlog Hangat", transisi: "potong", zoom: 1.07, desk: "Rapi dan jelas, cocok untuk hampir semua video" },
+  "Sinematik": { templat: "Puisi Film", transisi: "fade", zoom: 1.05, desk: "Film pudar, transisi pudar di pergantian bagian" },
+  "Monokrom": { templat: "Monokrom Film", transisi: "blur", zoom: 1.06, desk: "Hitam putih film dengan grain halus" },
+  "Energik": { templat: "Tutorial", transisi: "flash", zoom: 1.12, desk: "Zoom lebih tegas, kilat putih di pergantian bagian" },
+  "Lembut": { templat: "Terang Lembut", transisi: "blur", zoom: 1.04, desk: "Terang, kalem, transisi blur" },
+};
+let gayaAktif = null;
+const gantiBagian = i => i > 0 && (P.potongan[i].mulai - P.potongan[i - 1].selesai > 1.2 || P.potongan[i].mulai < P.potongan[i - 1].mulai);
+async function pakaiGaya(nm) {
+  const g = GAYA_EDIT[nm]; if (!g || !P || !siap) return;
+  if (info.template[g.templat]) await pakaiTemplat(g.templat);
+  edit("gayaEdit", () => P.potongan.forEach((s, i) => {
+    s.transisi = gantiBagian(i) ? g.transisi : "potong";
+    if (s.zoom > 1.001 || i % 2) s.zoom = i % 2 ? g.zoom : 1;  // ritme punch-in tetap selang-seling
+  }), true);
+  gayaAktif = nm; tombolGaya(); status(`Gaya ${nm}: ${g.desk}. Putar untuk melihat.`);
+}
+function tombolGaya() {
+  $("gayaEdit").hidden = !P;
+  $("gayaTombol").innerHTML = Object.entries(GAYA_EDIT).map(([n, g]) => `<button data-g="${n}" title="${esc(g.desk)}" class="${n === gayaAktif ? "aktif" : ""}">${n}</button>`).join("");
+}
+$("gayaTombol").onclick = e => { const b = e.target.closest("[data-g]"); if (b) pakaiGaya(b.dataset.g); };
+
+// ---------- Edit Pro: sekali jalan, langsung jadi (Gemini kalau ada, kalau tidak offline) ----------
+const namaMusik = () => P.musik === "auto" ? "otomatis (dipilih saat export)" : P.musik;
+async function editPro() {
+  if (!P || !siap) return;
+  const n = ++nomorEO, hookKu = P.hook;
+  $("proJalan").hidden = false; $("proGalat").hidden = true; $("proLog").textContent = "Memulai…"; tampilModal("mPro", true);
+  try {
+    const r = await tunggu((await api("/edit_pro", { video: P.sumber[0], audio: P.audio, rasio: P.rasio })).id, b => { if (n === nomorEO) $("proLog").textContent = b; });
+    if (n !== nomorEO) return;
+    tampilModal("mPro", false);
+    edit("pro", () => {
+      P.potongan = (r.potongan || []).map(s => ({ mulai: clamp(s.mulai, 0, dur), selesai: clamp(s.selesai, 0, dur), zoom: clamp(s.zoom ?? 1, 1, 1.2), ...(s.transisi ? { transisi: s.transisi } : {}) }))
+        .filter(s => s.selesai - s.mulai > 0.05);
+      if (!P.potongan.length) P.potongan = [{ mulai: 0, selesai: dur, zoom: 1 }];
+      P.elemen = (r.elemen || []).map(e => ({ jenis: JENIS[e.jenis] ? e.jenis : "label", teks: e.teks || "", mulai: e.mulai, selesai: e.selesai }));
+      for (const k of ["durasi_hook", "subtitle", "bingkai", "rasio", "gaya", "stabil"]) if (r[k] !== undefined && r[k] !== null) P[k] = r[k];
+      P.hook = hookKu || r.hook || "";  // judul yang sudah kamu tulis sendiri tidak diganti
+      P.warna = r.warna || ""; P.judul = r.judul || ""; P.atur = { ...nol(), ...(r.atur || {}) };
+      if (!P.musik) P.musik = r.musik || null;
+      P.pro = { model: (r.pro || {}).model || "" };
+      sel = null; tplAktif = null;
+    }, 0);
+    if (P.subtitle && !kata) buatSubtitle();
+    status(`Sudah diedit: ${(r.pro || {}).ringkasan || ""} Putar untuk melihat, ubah apa saja, lalu Export.`);
+  } catch (e) {
+    if (n !== nomorEO) return;
+    $("proJalan").hidden = true; $("proGalat").hidden = false; $("proGalat").textContent = e.message;
+  }
+}
+$("bPro").onclick = editPro;
+$("proTutup").onclick = () => { nomorEO++; tampilModal("mPro", false); if (P && !P.pro) { P.pro = { model: "manual" }; jadwalSimpan(); } };
+
+// ---------- Edit Otomatis (Gemini) ----------
+function tampilModal(id, tampil) { $(id).hidden = !tampil; }
+async function editOtomatis() {
+  if (!P || !siap) return;
+  const n = ++nomorEO;
+  $("eoJalan").hidden = false; $("eoGalat").hidden = $("eoHasil").hidden = true; $("eoLog").textContent = "Memulai…"; tampilModal("mEO", true);
+  try {
+    const r = await tunggu((await api("/sutradara", { video: P.sumber[0], audio: P.audio, rasio: P.rasio })).id, b => { if (n === nomorEO) $("eoLog").textContent = b; });
+    if (n !== nomorEO) return;
+    $("eoJalan").hidden = true; $("eoHasil").hidden = false;
+    $("eoRingkas").textContent = r.ringkasan || "";
+    $("eoVersi").innerHTML = "";
+    r.versi.forEach(v => {
+      const b = document.createElement("button");
+      b.innerHTML = `<b></b><span class="redup"></span><small></small>`;
+      b.querySelector("b").textContent = v.nama; b.querySelector("span").textContent = [v.gaya, v.warna, v.judul].filter(Boolean).join(" · ");
+      b.querySelector("small").textContent = v.alasan || "";
+      b.onclick = () => { tampilModal("mEO", false); nomorEO++; terapkanRencana(r.dasar, v); };
+      $("eoVersi").append(b);
+    });
+  } catch (e) {
+    if (n !== nomorEO) return;
+    $("eoJalan").hidden = true; $("eoGalat").hidden = false; $("eoGalat").textContent = e.message;
+  }
+}
+function terapkanRencana(d, v) {  // rencana dasar + versi pilihan masuk ke timeline (bisa diurungkan)
+  edit("eo", () => {
+    P.potongan = (d.potongan || []).map(s => ({ mulai: clamp(s.mulai, 0, dur), selesai: clamp(s.selesai, 0, dur), zoom: clamp(s.zoom ?? 1, 1, 1.2), ...(s.transisi ? { transisi: s.transisi } : {}) }))
+      .filter(s => s.selesai - s.mulai > 0.05);
+    if (!P.potongan.length) P.potongan = [{ mulai: 0, selesai: dur, zoom: 1 }];
+    P.elemen = (d.elemen || []).map(e => ({ jenis: JENIS[e.jenis] ? e.jenis : "label", teks: e.teks || "", mulai: e.mulai, selesai: e.selesai }));
+    for (const k of ["hook", "durasi_hook", "subtitle", "bingkai", "rasio"]) if (d[k] !== undefined && d[k] !== null) P[k] = d[k];
+    Object.assign(P, { gaya: v.gaya, warna: v.warna || "", judul: v.judul || "", atur: { ...nol(), ...(v.atur || {}) } });
+    sel = null; tplAktif = null;
+  }, 0);
+  status(`Versi ${v.nama} dipakai. Tekan Urungkan kalau tidak cocok.`);
+}
+$("bEO").onclick = editOtomatis;
+$("eoTutup").onclick = () => { nomorEO++; tampilModal("mEO", false); };
+
+// ---------- Export ----------
+async function exportProyek() {
+  if (!P || !siap) return;
+  jeda();
+  const n = ++nomorExp;
+  $("exJalan").hidden = false; $("exGalat").hidden = $("exHasil").hidden = $("exBuka").hidden = $("exCaption").hidden = true; $("exLog").textContent = "Memulai…"; tampilModal("mExp", true);
+  try {
+    const bar = $("exJalan").querySelector(".bar"); bar.classList.remove("pasti");
+    const r = await tunggu((await api("/render_proyek", { proyek: proyekBersih() })).id, b => {
+      if (n !== nomorExp) return;
+      const x = langkahProses(b); $("exLog").textContent = x.teks;
+      if (x.persen != null) { bar.classList.add("pasti"); bar.style.setProperty("--p", x.persen + "%"); }
+    });
+    if (n !== nomorExp) return;
+    $("exJalan").hidden = true; $("exHasil").hidden = $("exBuka").hidden = false;
+    $("exNama").textContent = `${r.p}  ·  proyek: ${r.proyek}`;
+    $("exVideo").src = "/file?p=" + encodeURIComponent(r.p);
+    $("exBuka").onclick = () => fetch("/buka?p=" + encodeURIComponent(r.p));
+    capVideo = r.p; $("exCaption").hidden = false;
+    status("Export selesai: " + r.p);
+  } catch (e) {
+    if (n !== nomorExp) return;
+    $("exJalan").hidden = true; $("exGalat").hidden = false; $("exGalat").textContent = e.message; status(e.message, true);
+  }
+}
+$("bExport").onclick = exportProyek;
+function langkahProses(b) {  // baris log autoedit -> kalimat untuk pengguna (+ persen saat merender)
+  const m = /^\[(\w+)\]\s*(.*)$/.exec(b || ""); if (!m) return { teks: b };
+  const [, k, isi] = m;
+  if (k === "progres") return { teks: `Merender video… ${isi}%`, persen: +isi };
+  return { teks: {
+    transkrip: "Mendengarkan ucapan untuk subtitle…", gabung: "Menggabungkan klip…", stabil: "Menstabilkan video yang goyang…",
+    potong: "Memotong video: " + isi.replace(/\s*\(.*\)$/, ""), musik: "Musik: " + isi, suara: "Membersihkan suara…",
+    audio: "Menyelaraskan suara terpisah…", render: "Menyiapkan warna, teks, dan suara…", selesai: "Selesai",
+  }[k] || b };
+}
+$("bCapcut").onclick = async () => {
+  if (!P || !siap) return;
+  $("bCapcut").disabled = true;
+  try {
+    const r = await tunggu((await api("/capcut", { proyek: proyekBersih() })).id);
+    status(`Draft "${r.nama}" sudah ada di CapCut. Buka CapCut (tutup dan buka lagi kalau sedang terbuka), lalu pilih draft itu.`);
+  } catch (e) { status(e.message, true); }
+  $("bCapcut").disabled = false;
+};
+// ---------- Caption & cover ----------
+let capVideo = null;
+const CAP_PLATFORM = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube Shorts", x: "X", linkedin: "LinkedIn" };
+$("exCaption").onclick = () => { $("capHasil").hidden = $("capGalat").hidden = $("capJalan").hidden = true; $("capBuat").disabled = false; tampilModal("mCap", true); };
+$("capTutup").onclick = () => tampilModal("mCap", false);
+$("capBuat").onclick = async () => {
+  if (!capVideo) return;
+  $("capBuat").disabled = true; $("capGalat").hidden = $("capHasil").hidden = true; $("capJalan").hidden = false; $("capJalan").textContent = "Memulai…";
+  try {
+    const r = await tunggu((await api("/caption", { video: capVideo, catatan: $("capCatatan").value.trim() })).id, b => $("capJalan").textContent = b);
+    const w = $("capHasil"); w.innerHTML = "";
+    if (r.model === "offline") { const o = document.createElement("div"); o.className = "redup"; o.textContent = "model: offline — caption dibuat dari transkrip (Gemini tidak tersedia)."; w.append(o); }
+    for (const [k, nama] of Object.entries(CAP_PLATFORM)) {
+      const t = (r.siap || {})[k]; if (t == null) continue;
+      const l = document.createElement("div"); l.className = "redup"; l.style.marginTop = "10px"; l.textContent = nama + (k === "x" ? ` (${t.length}/280)` : ` (${t.length})`);
+      const a = document.createElement("textarea"); a.readOnly = true; a.value = t; a.rows = 4; a.style.cssText = "width:100%;background:#2a2a2a;color:inherit;border:1px solid var(--garis);border-radius:6px;padding:6px 8px;font:inherit";
+      const b = document.createElement("button"); b.textContent = "Salin";
+      b.onclick = async () => { try { await navigator.clipboard.writeText(t); } catch (e) { a.select(); document.execCommand("copy"); } b.textContent = "Tersalin ✓"; setTimeout(() => b.textContent = "Salin", 1500); };
+      w.append(l, a, b);
+    }
+    if (r.cover) {
+      const g = document.createElement("img"); g.src = "/file?p=" + encodeURIComponent(r.cover); g.style.cssText = "display:block;max-height:240px;max-width:100%;margin-top:12px;border-radius:6px";
+      const d = document.createElement("a"); d.href = g.src; d.download = r.cover; d.textContent = "Unduh cover"; d.style.cssText = "color:var(--aksen);display:block;margin-top:4px";
+      w.append(g, d);
+    }
+    w.hidden = false;
+  } catch (e) { $("capGalat").hidden = false; $("capGalat").textContent = e.message; }
+  $("capJalan").hidden = true; $("capBuat").disabled = false;
+};
+$("exTutup").onclick = () => { nomorExp++; $("exVideo").pause(); tampilModal("mExp", false); };
+
+// ---------- Tombol & keyboard ----------
+$("bUndo").onclick = undo; $("bRedo").onclick = redo;
+$("bPutar").onclick = () => main ? jeda() : putar();
+$("bMundur").onclick = () => { jeda(); pergi(t - 1 / 30); };
+$("bMaju").onclick = () => { jeda(); pergi(t + 1 / 30); };
+$("bAkurat").onclick = warnaAkurat;
+$("bPisah").onclick = pisah; $("bHapus").onclick = hapusPilihan; $("bGanda").onclick = gandaPilihan;
+$("bTeks").onclick = tambahTeks; $("bBuatSub").onclick = buatSubtitle; $("bHening").onclick = potongHening;
+
+document.addEventListener("click", e => { if (e.target.matches("button")) e.target.blur(); });  // supaya Spasi tidak menekan tombol terakhir
+document.addEventListener("change", e => { if (e.target.matches("select,input[type=range],input[type=checkbox]")) e.target.blur(); });
+addEventListener("keydown", e => {
+  if (!$("mEO").hidden || !$("mExp").hidden || !$("mPro").hidden) return;
+  const ketik = e.target.matches("input,textarea,select");
+  if ((e.ctrlKey || e.metaKey) && !ketik) {
+    const k = e.key.toLowerCase();
+    if (k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if (k === "y") { e.preventDefault(); redo(); }
+    return;
+  }
+  if (ketik || !P || !siap) return;
+  const langkah = e.shiftKey ? 1 : 1 / 30;
+  if (e.key === " ") { e.preventDefault(); main ? jeda() : putar(); }
+  else if (e.key === "s" || e.key === "S") pisah();
+  else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); hapusPilihan(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); jeda(); pergi(t - langkah); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); jeda(); pergi(t + langkah); }
+});
+
+// ---------- Mulai ----------
+async function bukaProyek(berkas) {
+  const r = await fetch("/file?p=" + encodeURIComponent(berkas));
+  if (!r.ok) throw new Error("Proyek tidak ditemukan: " + berkas);
+  const p = normalisasi(await r.json());
+  if (p.sumber.length > 1) {  // beberapa video disambung dulu jadi satu
+    status(`Menggabungkan ${p.sumber.length} video…`);
+    p.sumber = [(await tunggu((await api("/gabung", { videos: p.sumber })).id)).p];
+  }
+  P = p; namaProyek = nama(berkas);
+}
+
+async function mulai() {
+  info = await api("/info");
+  bangunPanel();
+  setInterval(() => fetch("/ping").catch(() => {}), 5000);  // supaya server tahu halaman masih terbuka
+  const q = new URLSearchParams(location.search);
+  try {
+    if (q.get("proyek")) await bukaProyek(q.get("proyek"));
+    else if (q.get("video")) P = proyekBaru(nama(q.get("video")));
+  } catch (e) { status(e.message, true); }
+  tombolRiwayat(); tombolSub();
+  if (P) { sinkronMedia(); isiPanel(); }
+  tombolGaya();
+}
+mulai().catch(e => status(e.message, true));
+</script>
+</body>
+</html>

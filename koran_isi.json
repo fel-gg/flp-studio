@@ -1,0 +1,22 @@
+{
+ "_catatan": "Isi bawaan potongan koran di samping halaman utama. Ganti sesukamu: judul pendek, isi = cerita/fun fact. Urutan: kiri-atas, kiri-bawah, kanan-atas, kanan (dengan gambar).",
+ "potongan": [
+  {
+   "judul": "As It Happens",
+   "isi": "Fun fact: I own more Lana Del Rey songs than socks, and I have listened to Video Games on a rainy night more times than I will ever admit. Melancholy is not sadness to me. It is the quiet part of the day when everything feels honest, the streetlights come on one by one and the city finally slows down enough to be heard. I write things down in that hour. Most of them never leave the notebook. Some of them become videos. I like old cameras, cold coffee that was supposed to be hot, long walks with no destination and songs that sound like summer ending. I believe the small moments are the real headlines, and that nobody remembers the day, only the feeling of it."
+  },
+  {
+   "judul": "Not by accident.",
+   "isi": ""
+  },
+  {
+   "judul": "Summertime Sadness",
+   "isi": "Overheard at 2 a.m.: a boy explaining to his reflection why the bridge of a Lana song is the best part. Sources confirm the reflection agreed. In other news, the weather remains melancholic with a high chance of nostalgia, scattered daydreams in the afternoon and a soft golden hour expected near sunset. Residents are advised to keep a jacket, a playlist and an open heart."
+  },
+  {
+   "judul": "Born to Feel",
+   "isi": "Things I collect: film photos with light leaks, ticket stubs from nights I want to keep, voice notes of people laughing, and quotes I find on the internet at 1 a.m. Favourite one this week: we are all just walking each other home. Things I avoid: rushing, small talk about nothing, and endings without a good song.",
+   "gambar": true
+  }
+ ]
+}
